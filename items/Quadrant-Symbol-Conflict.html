@@ -304,7 +304,9 @@
             incorrectAnswers: 0,
             currentSymbol: null, // 'plus' or 'arrow'
             currentQuadrant: null, // 1, 2, 3, or 4
-            waitingForAnswer: false
+            waitingForAnswer: false,
+            timeoutId: null,
+            timeLimit: 1500 // 1.5 seconds in milliseconds
         };
 
         function startGame() {
@@ -316,7 +318,9 @@
                 incorrectAnswers: 0,
                 currentSymbol: null,
                 currentQuadrant: null,
-                waitingForAnswer: false
+                waitingForAnswer: false,
+                timeoutId: null,
+                timeLimit: 1500
             };
 
             document.getElementById('startBtn').disabled = true;
@@ -359,10 +363,38 @@
             enableButtons(true);
 
             updateStats();
+
+            // Set timeout for 1.5 seconds
+            gameState.timeoutId = setTimeout(() => {
+                if (gameState.waitingForAnswer) {
+                    handleTimeout();
+                }
+            }, gameState.timeLimit);
+        }
+
+        function handleTimeout() {
+            if (!gameState.waitingForAnswer) return;
+
+            gameState.waitingForAnswer = false;
+            gameState.incorrectAnswers++;
+            enableButtons(false);
+
+            updateStats();
+
+            // Show all buttons as disabled without feedback
+            setTimeout(() => {
+                nextQuestion();
+            }, 300);
         }
 
         function handleAnswer(quadrant, row) {
             if (!gameState.waitingForAnswer) return;
+
+            // Clear the timeout
+            if (gameState.timeoutId) {
+                clearTimeout(gameState.timeoutId);
+                gameState.timeoutId = null;
+            }
 
             gameState.waitingForAnswer = false;
             enableButtons(false);
@@ -457,6 +489,11 @@
         }
 
         function resetGame() {
+            // Clear any pending timeout
+            if (gameState.timeoutId) {
+                clearTimeout(gameState.timeoutId);
+            }
+
             gameState = {
                 isPlaying: false,
                 currentQuestion: 0,
@@ -465,7 +502,9 @@
                 incorrectAnswers: 0,
                 currentSymbol: null,
                 currentQuadrant: null,
-                waitingForAnswer: false
+                waitingForAnswer: false,
+                timeoutId: null,
+                timeLimit: 1500
             };
 
             document.getElementById('startBtn').disabled = false;
