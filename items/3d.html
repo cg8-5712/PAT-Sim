@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026民航招飞PAT新题型 - 视图识别训练</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header h2 {
+            color: #764ba2;
+            font-size: 20px;
+            font-weight: normal;
+        }
+
+        .instruction {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .instruction h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .instruction p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .main-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .original-title {
+            text-align: center;
+            color: #667eea;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .canvas-container {
+            width: 100%;
+            height: 350px;
+            background: #2c3e50;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .rotate-hint {
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .option-card {
+            background: white;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-color: #667eea;
+        }
+
+        .option-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .option-card.correct {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+
+        .option-card.incorrect {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+
+        .option-label {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .option-canvas {
+            width: 100%;
+            height: 250px;
+            background: #2c3e50;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .option-canvas canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .result-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .result-badge.correct {
+            background: #4caf50;
+            color: white;
+        }
+
+        .result-badge.incorrect {
+            background: #f44336;
+            color: white;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header h2 {
+                font-size: 16px;
+            }
+
+            .canvas-container {
+                height: 250px;
+            }
+
+            .option-canvas {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>2026民航招飞PAT新题型</h1>
+            <h2>视图识别训练</h2>
+        </div>
+
+        <div class="instruction">
+            <h3>测试方法说明</h3>
+            <p>原几何体如下图所示，四个选项表示从不同视角查看原几何体，其中有一个视图所指几何体与原几何体不是同一个。请找出这个不同的选项。</p>
+        </div>
+
+        <div class="main-section">
+            <div class="original-title">原几何体</div>
+            <div class="canvas-container" id="originalContainer"></div>
+            <div class="rotate-hint">💡 提示：图形会自动旋转展示</div>
+
+            <div class="options-grid" id="optionsGrid"></div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="nextBtn" disabled>下一题</button>
+                <button class="btn btn-secondary" id="resetBtn">重置统计</button>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stat-item">
+                <div class="stat-value" id="questionNum">1</div>
+                <div class="stat-label">当前题号</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="correctNum">0</div>
+                <div class="stat-label">正确数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="incorrectNum">0</div>
+                <div class="stat-label">错误数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="accuracy">0%</div>
+                <div class="stat-label">正确率</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // 游戏状态管理
+        const gameState = {
+            questionNum: 1,
+            correctNum: 0,
+            incorrectNum: 0,
+            answered: false,
+            correctAnswer: 0
+        };
+
+        // 预定义的立方体结构模板（使用相对坐标）
+        const shapeTemplates = [
+            // L型结构
+            [
+                [0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0],
+                [0, 1, 0], [0, 2, 0], [0, 3, 0]
+            ],
+            // T型结构
+            [
+                [0, 0, 0], [1, 0, 0], [2, 0, 0], [3, 0, 0],
+                [1, 1, 0], [1, 2, 0]
+            ],
+            // 十字型
+            [
+                [1, 0, 0], [1, 1, 0], [1, 2, 0],
+                [0, 1, 0], [2, 1, 0]
+            ],
+            // 立体L型
+            [
+                [0, 0, 0], [1, 0, 0], [2, 0, 0],
+                [0, 1, 0], [0, 2, 0],
+                [0, 0, 1], [0, 1, 1]
+            ],
+            // Z型结构
+            [
+                [0, 0, 0], [1, 0, 0],
+                [1, 1, 0], [2, 1, 0],
+                [1, 0, 1]
+            ],
+            // 阶梯型
+            [
+                [0, 0, 0], [1, 0, 0],
+                [1, 1, 0], [2, 1, 0],
+                [2, 2, 0], [3, 2, 0]
+            ],
+            // 复杂立体结构
+            [
+                [0, 0, 0], [1, 0, 0], [2, 0, 0],
+                [1, 1, 0], [1, 0, 1], [1, 1, 1]
+            ]
+        ];
+
+        // 创建3D场景
+        function createScene(container, blocks, rotation = null) {
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x2c3e50);
+
+            const camera = new THREE.PerspectiveCamera(
+                50,
+                container.clientWidth / container.clientHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(8, 8, 8);
+            camera.lookAt(0, 0, 0);
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // 添加光源
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight1.position.set(5, 10, 5);
+            scene.add(directionalLight1);
+
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+            directionalLight2.position.set(-5, 5, -5);
+            scene.add(directionalLight2);
+
+            // 创建立方体组
+            const group = new THREE.Group();
+            const geometry = new THREE.BoxGeometry(0.95, 0.95, 0.95);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0xcccccc,
+                metalness: 0.3,
+                roughness: 0.4
+            });
+
+            const edgeGeometry = new THREE.EdgesGeometry(geometry);
+            const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x333333, linewidth: 2 });
+
+            blocks.forEach(([x, y, z]) => {
+                const cube = new THREE.Mesh(geometry, material);
+                cube.position.set(x, y, z);
+                group.add(cube);
+
+                const edges = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+                edges.position.set(x, y, z);
+                group.add(edges);
+            });
+
+            // 计算中心点
+            const box = new THREE.Box3().setFromObject(group);
+            const center = box.getCenter(new THREE.Vector3());
+            group.position.sub(center);
+
+            if (rotation) {
+                group.rotation.set(rotation.x, rotation.y, rotation.z);
+            }
+
+            scene.add(group);
+
+            return { scene, camera, renderer, group };
+        }
+
+        // 生成随机但不同的旋转角度
+        function generateRotations() {
+            const baseRotations = [
+                { x: 0, y: 0, z: 0 },
+                { x: 0, y: Math.PI / 2, z: 0 },
+                { x: 0, y: Math.PI, z: 0 },
+                { x: 0, y: -Math.PI / 2, z: 0 },
+                { x: Math.PI / 2, y: 0, z: 0 },
+                { x: -Math.PI / 2, y: 0, z: 0 },
+                { x: Math.PI / 4, y: Math.PI / 4, z: 0 },
+                { x: -Math.PI / 4, y: Math.PI / 3, z: 0 }
+            ];
+
+            // 随机选择4个不同的旋转角度
+            const shuffled = baseRotations.sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, 4);
+        }
+
+        // 生成不同的几何体（移除一个方块）
+        function generateDifferentShape(originalBlocks) {
+            const modified = [...originalBlocks];
+            if (modified.length > 3) {
+                // 随机移除一个非边缘的方块
+                const removeIndex = Math.floor(Math.random() * modified.length);
+                modified.splice(removeIndex, 1);
+            }
+            return modified;
+        }
+
+        // 初始化新题目
+        function initNewQuestion() {
+            gameState.answered = false;
+            document.getElementById('nextBtn').disabled = true;
+
+            // 清空容器
+            const originalContainer = document.getElementById('originalContainer');
+            originalContainer.innerHTML = '';
+
+            const optionsGrid = document.getElementById('optionsGrid');
+            optionsGrid.innerHTML = '';
+
+            // 随机选择一个形状模板
+            const template = shapeTemplates[Math.floor(Math.random() * shapeTemplates.length)];
+            const originalBlocks = JSON.parse(JSON.stringify(template));
+
+            // 创建原始几何体（自动旋转）
+            const originalScene = createScene(originalContainer, originalBlocks);
+
+            // 原始几何体自动旋转动画
+            function animateOriginal() {
+                requestAnimationFrame(animateOriginal);
+                originalScene.group.rotation.y += 0.005;
+                originalScene.renderer.render(originalScene.scene, originalScene.camera);
+            }
+            animateOriginal();
+
+            // 生成4个选项
+            const rotations = generateRotations();
+            const wrongAnswerIndex = Math.floor(Math.random() * 4);
+            gameState.correctAnswer = wrongAnswerIndex;
+
+            for (let i = 0; i < 4; i++) {
+                const optionCard = document.createElement('div');
+                optionCard.className = 'option-card';
+                optionCard.dataset.index = i;
+
+                const label = document.createElement('div');
+                label.className = 'option-label';
+                label.textContent = `选项 ${String.fromCharCode(65 + i)}`;
+
+                const canvasDiv = document.createElement('div');
+                canvasDiv.className = 'option-canvas';
+
+                optionCard.appendChild(label);
+                optionCard.appendChild(canvasDiv);
+                optionsGrid.appendChild(optionCard);
+
+                // 错误答案使用不同的几何体
+                const blocks = i === wrongAnswerIndex
+                    ? generateDifferentShape(originalBlocks)
+                    : originalBlocks;
+
+                const optionScene = createScene(canvasDiv, blocks, rotations[i]);
+
+                // 选项缓慢旋转
+                function animateOption() {
+                    requestAnimationFrame(animateOption);
+                    optionScene.group.rotation.y += 0.003;
+                    optionScene.renderer.render(optionScene.scene, optionScene.camera);
+                }
+                animateOption();
+
+                // 点击事件
+                optionCard.addEventListener('click', () => handleAnswer(i, optionCard));
+            }
+
+            // 窗口大小调整
+            window.addEventListener('resize', () => {
+                const scenes = document.querySelectorAll('.canvas-container, .option-canvas');
+                scenes.forEach(container => {
+                    const canvas = container.querySelector('canvas');
+                    if (canvas) {
+                        canvas.style.width = '100%';
+                        canvas.style.height = '100%';
+                    }
+                });
+            });
+        }
+
+        // 处理答案
+        function handleAnswer(selectedIndex, selectedCard) {
+            if (gameState.answered) return;
+
+            gameState.answered = true;
+            const isCorrect = selectedIndex === gameState.correctAnswer;
+
+            // 更新统计
+            if (isCorrect) {
+                gameState.correctNum++;
+                selectedCard.classList.add('correct');
+                const badge = document.createElement('div');
+                badge.className = 'result-badge correct';
+                badge.textContent = '✓ 正确';
+                selectedCard.appendChild(badge);
+            } else {
+                gameState.incorrectNum++;
+                selectedCard.classList.add('incorrect');
+                const badge = document.createElement('div');
+                badge.className = 'result-badge incorrect';
+                badge.textContent = '✗ 错误';
+                selectedCard.appendChild(badge);
+
+                // 显示正确答案
+                const correctCard = document.querySelector(`[data-index="${gameState.correctAnswer}"]`);
+                correctCard.classList.add('correct');
+                const correctBadge = document.createElement('div');
+                correctBadge.className = 'result-badge correct';
+                correctBadge.textContent = '✓ 正确答案';
+                correctCard.appendChild(correctBadge);
+            }
+
+            // 禁用所有选项
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.style.pointerEvents = 'none';
+            });
+
+            updateStats();
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('questionNum').textContent = gameState.questionNum;
+            document.getElementById('correctNum').textContent = gameState.correctNum;
+            document.getElementById('incorrectNum').textContent = gameState.incorrectNum;
+
+            const total = gameState.correctNum + gameState.incorrectNum;
+            const accuracy = total > 0 ? Math.round((gameState.correctNum / total) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        // 下一题
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            gameState.questionNum++;
+            initNewQuestion();
+        });
+
+        // 重置统计
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('确定要重置所有统计数据吗？')) {
+                gameState.questionNum = 1;
+                gameState.correctNum = 0;
+                gameState.incorrectNum = 0;
+                updateStats();
+                initNewQuestion();
+            }
+        });
+
+        // 初始化第一题
+        initNewQuestion();
+    </script>
+</body>
+</html>
