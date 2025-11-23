@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>数字排序测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .controls label {
+            margin-right: 10px;
+        }
+        .controls input, .controls select {
+            margin-right: 20px;
+        }
+        .grid {
+            display: grid;
+            gap: 5px;
+            margin: 20px auto;
+            max-width: 600px;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+        }
+        .grid button {
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 1 / 1;
+            padding: 10px;
+            font-size: 18px;
+            text-align: center;
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .grid button.hidden {
+            background-color: #ccc;
+            color: #ccc;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e8f4fc;
+            border: 1px solid #0078d7;
+            border-radius: 8px;
+        }
+        table {
+            max-width: 400px;
+            width: 400px;
+            height: 400px;
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+        td {
+            border: 1px solid #333;
+            padding: 5px;
+            text-align: center;
+            font-size: 14px;
+            width: calc(400px / var(--grid-size, 6));
+            height: calc(400px / var(--grid-size, 6));
+        }
+    </style>
+</head>
+<body>
+    <h1>数字排序测试</h1>
+    <div class="controls">
+        <label for="grid-size">表格大小:</label>
+        <select id="grid-size">
+            <option value="6">6x6</option>
+            <option value="8">8x8</option>
+        </select>
+        <label for="number-count">数字量:</label>
+        <select id="number-count">
+            <option value="8">1-8</option>
+            <option value="10">1-10</option>
+            <option value="12">1-12</option>
+        </select>
+        <label for="time-limit">时间限制:</label>
+        <select id="time-limit">
+            <option value="6">6秒</option>
+            <option value="8">8秒</option>
+            <option value="10">10秒</option>
+        </select>
+        <button onclick="startTest()">开始测试</button>
+    </div>
+
+    <div id="grid-container" class="grid" style="display: none;"></div>
+
+    <div id="result" class="result" style="display: none;"></div>
+
+    <script>
+        let gridSize = 6;
+        let numberCount = 8;
+        let timeLimit = 6;
+        let numbers = [];
+        let userClicks = [];
+        let startTime;
+
+        function startTest() {
+            gridSize = parseInt(document.getElementById('grid-size').value, 10);
+            numberCount = parseInt(document.getElementById('number-count').value, 10);
+            timeLimit = parseInt(document.getElementById('time-limit').value, 10);
+
+            generateNumbers();
+            renderGrid();
+
+            document.getElementById('grid-container').style.display = 'grid';
+            document.getElementById('grid-container').style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
+            document.getElementById('result').style.display = 'none';
+
+            setTimeout(hideNumbers, timeLimit * 1000);
+        }
+
+        function generateNumbers() {
+            numbers = Array.from({ length: gridSize * gridSize }, (_, i) => i + 1);
+            numbers = numbers.sort(() => Math.random() - 0.5);
+        }
+
+        function renderGrid() {
+            const gridContainer = document.getElementById('grid-container');
+            gridContainer.innerHTML = '';
+            numbers.forEach((num, index) => {
+                const button = document.createElement('button');
+                button.textContent = num;
+                button.dataset.value = num;
+                button.onclick = () => handleClick(num, button);
+                gridContainer.appendChild(button);
+            });
+        }
+
+        function hideNumbers() {
+            const buttons = document.querySelectorAll('#grid-container button');
+            buttons.forEach(button => {
+                if (button.textContent !== '') {
+                    button.classList.add('hidden');
+                }
+            });
+            startTime = Date.now();
+        }
+
+        function handleClick(value, button) {
+            if (value === '') return;
+
+            userClicks.push(parseInt(value, 10));
+            button.disabled = true;
+
+            if (userClicks.length === numberCount) {
+                endTest();
+            }
+        }
+
+        function endTest() {
+            const endTime = Date.now();
+            const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
+            const correct = userClicks.every((val, index) => val === index + 1);
+
+            document.getElementById('grid-container').style.display = 'none';
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <h2>测试结果</h2>
+                <p>用时: ${timeTaken} 秒</p>
+                <h3>完整表格:</h3>
+                <table style="border-collapse: collapse; width: 100%;">
+                    ${generateResultTable()}
+                </table>
+            `;
+        }
+
+        function generateResultTable() {
+            let tableHTML = '';
+            for (let i = 0; i < gridSize; i++) {
+                tableHTML += '<tr>';
+                for (let j = 0; j < gridSize; j++) {
+                    const value = numbers[i * gridSize + j];
+
+                    if (value <= numberCount) {
+                        // value 是这个位置的原始数字（绿色）
+                        // 找出用户在第几步点击了这个数字
+                        const clickOrder = userClicks.indexOf(value) + 1; // 用户点击这个数字的顺序（第几步）
+
+                        if (clickOrder > 0) {
+                            // 用户点击了这个数字
+                            const isCorrect = clickOrder === value; // 第value步点击了数字value，则正确
+
+                            if (isCorrect) {
+                                // 点击正确，只显示绿色的原始数字
+                                tableHTML += `<td style="border: 1px solid #333; padding: 10px; text-align: center; color: green; font-weight: bold;">${value}</td>`;
+                            } else {
+                                // 点击错误，显示绿色原始数字 + 红色点击顺序
+                                tableHTML += `<td style="border: 1px solid #333; padding: 10px; text-align: center;">
+                                    <div style="color: green; font-weight: bold;">${value}</div>
+                                    <div style="color: red; font-size: 14px;">${clickOrder}</div>
+                                </td>`;
+                            }
+                        } else {
+                            // 用户未点击这个数字，显示用户在第value步实际点击了什么
+                            const actualClick = userClicks[value - 1]; // 用户在第value步点击的数字
+                            tableHTML += `<td style="border: 1px solid #333; padding: 10px; text-align: center;">
+                                <div style="color: green; font-weight: bold;">${value}</div>
+                                <div style="color: red; font-size: 14px;">${actualClick !== undefined ? actualClick : '未点击'}</div>
+                            </td>`;
+                        }
+                    } else {
+                        // 超出选择范围的数字，用黑色显示
+                        tableHTML += `<td style="border: 1px solid #333; padding: 10px; text-align: center; color: black;">${value}</td>`;
+                    }
+                }
+                tableHTML += '</tr>';
+            }
+            return tableHTML;
+        }
+    </script>
+</body>
+</html>
