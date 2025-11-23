@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N-back 测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            background-color: #0078d7;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .instructions {
+            background: #e8f4fc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #0078d7;
+        }
+        .instructions h2 {
+            color: #0078d7;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .instructions p {
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .controls label {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .controls input {
+            padding: 8px;
+            font-size: 16px;
+            width: 80px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .controls button {
+            flex: 1;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            background-color: #0078d7;
+            color: white;
+        }
+        .controls button:hover:not(:disabled) {
+            background-color: #005bb5;
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .stat-item {
+            background: #e8f4fc;
+            border: 1px solid #0078d7;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0078d7;
+        }
+        #test-area {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #current-item {
+            font-size: 48px;
+            font-weight: bold;
+            color: #0078d7;
+            margin: 40px 0;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #test-area button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        #test-area button:hover {
+            background-color: #005bb5;
+        }
+        #input-area {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        #input-area label {
+            font-weight: bold;
+        }
+        #input-area input {
+            padding: 10px;
+            font-size: 18px;
+            width: 100px;
+            text-align: center;
+            border: 2px solid #0078d7;
+            border-radius: 4px;
+        }
+        #input-area button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #input-area button:hover {
+            background-color: #005bb5;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #e8f4fc;
+            border: 1px solid #0078d7;
+            border-radius: 8px;
+        }
+        .result h2 {
+            color: #0078d7;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .result p {
+            margin-bottom: 10px;
+            line-height: 1.8;
+        }
+        .result-score {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0078d7;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>N-back 测试</h1>
+        <p>记忆与注意力训练</p>
+    </header>
+    <div class="container">
+        <div class="instructions">
+            <h2>测试说明</h2>
+            <p>屏幕上会依次显示一系列字母或数字，请记住每个字符。</p>
+            <p>当需要输入时，请输入当前字符<strong>前N个位置</strong>的字符。</p>
+            <p>例如：N=2时，当前显示第5个字符，你需要输入第3个字符。</p>
+        </div>
+
+        <div class="controls">
+            <label for="n-value">N 值设置:</label>
+            <input type="number" id="n-value" min="1" max="15" value="2">
+            <button onclick="startTest()">开始测试</button>
+        </div>
+
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-label">当前位置</div>
+                <div class="stat-value" id="currentIndex">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">序列长度</div>
+                <div class="stat-value" id="totalLength">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">已输入</div>
+                <div class="stat-value" id="inputCount">0</div>
+            </div>
+        </div>
+
+        <div id="test-area" style="display: none;">
+            <div id="current-item"></div>
+            <button onclick="nextItem()">下一个</button>
+            <div id="input-area" style="display: none;">
+                <label for="user-input">输入前N个字符:</label>
+                <input type="text" id="user-input" maxlength="1">
+                <button onclick="submitInput()">提交</button>
+            </div>
+        </div>
+
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        let sequence = [];
+        let userInputs = [];
+        let currentIndex = 0;
+        let n = 2;
+
+        function generateSequence() {
+            const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+            const length = Math.floor(Math.random() * 4) + 12; // 12-15
+            sequence = Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]);
+        }
+
+        function startTest() {
+            n = parseInt(document.getElementById('n-value').value, 10);
+            if (n < 1 || n > 15) {
+                alert('请输入1-15之间的N值');
+                return;
+            }
+
+            generateSequence();
+            currentIndex = 0;
+            userInputs = [];
+
+            document.getElementById('test-area').style.display = 'block';
+            document.getElementById('stats').style.display = 'grid';
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('input-area').style.display = 'none';
+
+            updateStats();
+            showItem();
+        }
+
+        function updateStats() {
+            document.getElementById('currentIndex').textContent = currentIndex + 1;
+            document.getElementById('totalLength').textContent = sequence.length;
+            document.getElementById('inputCount').textContent = userInputs.length;
+        }
+
+        function showItem() {
+            document.getElementById('current-item').textContent = sequence[currentIndex];
+        }
+
+        function nextItem() {
+            if (currentIndex >= sequence.length - 1) {
+                endTest();
+                return;
+            }
+
+            currentIndex++;
+
+            if (currentIndex >= n) {
+                document.getElementById('input-area').style.display = 'flex';
+                document.getElementById('user-input').focus();
+            } else {
+                document.getElementById('input-area').style.display = 'none';
+            }
+
+            updateStats();
+            showItem();
+        }
+
+        function submitInput() {
+            const input = document.getElementById('user-input').value.toUpperCase();
+
+            if (input === '') {
+                alert('请输入一个字符');
+                return;
+            }
+
+            userInputs.push(input);
+            document.getElementById('user-input').value = '';
+
+            if (currentIndex >= sequence.length - 1) {
+                endTest();
+            } else {
+                currentIndex++;
+                updateStats();
+                showItem();
+                document.getElementById('user-input').focus();
+            }
+        }
+
+        function endTest() {
+            document.getElementById('test-area').style.display = 'none';
+            document.getElementById('stats').style.display = 'none';
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+
+            const score = calculateScore();
+            const maxScore = sequence.length - n;
+            const accuracy = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+
+            let feedback = '';
+            if (accuracy >= 90) {
+                feedback = '🎉 优秀！记忆力超群！';
+            } else if (accuracy >= 75) {
+                feedback = '👍 良好！继续保持！';
+            } else if (accuracy >= 60) {
+                feedback = '💪 及格！还需加强练习！';
+            } else {
+                feedback = '📚 多加练习，相信你会进步！';
+            }
+
+            resultDiv.innerHTML = `
+                <h2>测试结果</h2>
+                <p><strong>原始序列:</strong> ${sequence.join(' ')}</p>
+                <p><strong>你的输入:</strong> ${userInputs.join(' ')}</p>
+                <p><strong>正确答案:</strong> ${sequence.slice(0, maxScore).join(' ')}</p>
+                <p class="result-score">成绩: ${score} / ${maxScore} (正确率: ${accuracy}%)</p>
+                <p style="margin-top: 15px; font-size: 18px;">${feedback}</p>
+            `;
+        }
+
+        function calculateScore() {
+            let score = 0;
+            for (let i = 0; i < userInputs.length && i < sequence.length - n; i++) {
+                if (userInputs[i] === sequence[i]) {
+                    score++;
+                }
+            }
+            return score;
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            const inputArea = document.getElementById('input-area');
+            const userInput = document.getElementById('user-input');
+
+            if (inputArea.style.display === 'flex' && e.key === 'Enter') {
+                if (document.activeElement === userInput) {
+                    submitInput();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
