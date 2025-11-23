@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>象限与符号冲突训练</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            background-color: #0078d7;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .instructions {
+            background: #e8f4fc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #0078d7;
+        }
+        .instructions h2 {
+            color: #0078d7;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .instructions p {
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+        .instructions .rule {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+        .instructions .symbol {
+            font-size: 24px;
+            font-weight: bold;
+            margin-right: 15px;
+            width: 40px;
+            text-align: center;
+        }
+        .blue-symbol {
+            color: #0078d7;
+        }
+        .gray-symbol {
+            color: #888;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .controls button {
+            flex: 1;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .start-btn {
+            background-color: #0078d7;
+            color: white;
+        }
+        .start-btn:hover:not(:disabled) {
+            background-color: #005bb5;
+        }
+        .reset-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+        .reset-btn:hover {
+            background-color: #5a6268;
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .stat-item {
+            background: #e8f4fc;
+            border: 1px solid #0078d7;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0078d7;
+        }
+        .game-area {
+            margin-bottom: 20px;
+        }
+        .button-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .quadrant-btn {
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .quadrant-btn:hover:not(:disabled) {
+            background: #f0f0f0;
+        }
+        .quadrant-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        .quadrant-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .quadrant-btn.correct {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        .quadrant-btn.incorrect {
+            background: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        .display-area {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            background: #f9f9f9;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 1px;
+            padding: 1px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+        .quadrant {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+            font-weight: bold;
+        }
+        .symbol-blue {
+            color: #0078d7;
+        }
+        .symbol-gray {
+            color: #888;
+        }
+        .countdown {
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            color: #0078d7;
+            margin: 20px 0;
+        }
+        .result-message {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .result-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .result-final {
+            background: #e8f4fc;
+            color: #0078d7;
+            border: 1px solid #0078d7;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>象限与符号冲突训练</h1>
+        <p>2026民航招飞PAT新题型</p>
+    </header>
+
+    <div class="container">
+        <div class="instructions">
+            <h2>测试方法说明</h2>
+            <p>图中有四个象限，蓝色十字或灰色箭头会随机落在任意一个象限。</p>
+            <div class="rule">
+                <span class="symbol blue-symbol">+</span>
+                <span><strong>蓝色十字：</strong>点击上面一行按钮对应的象限</span>
+            </div>
+            <div class="rule">
+                <span class="symbol gray-symbol">▶</span>
+                <span><strong>灰色箭头：</strong>点击下面一行按钮对应的象限</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="start-btn" id="startBtn" onclick="startGame()">开始训练</button>
+            <button class="reset-btn" onclick="resetGame()">重置</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">题目</div>
+                <div class="stat-value" id="questionNum">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">正确</div>
+                <div class="stat-value" id="correctNum">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">错误</div>
+                <div class="stat-value" id="incorrectNum">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">正确率</div>
+                <div class="stat-value" id="accuracy">0%</div>
+            </div>
+        </div>
+
+        <div class="game-area" id="gameArea" style="display: none;">
+            <div class="display-area" id="displayArea">
+                <div class="quadrant" id="q2"></div>
+                <div class="quadrant" id="q1"></div>
+                <div class="quadrant" id="q3"></div>
+                <div class="quadrant" id="q4"></div>
+            </div>
+
+            <div class="button-row">
+                <button class="quadrant-btn" id="btn-top-1" onclick="handleAnswer(1, 'top')" disabled>1</button>
+                <button class="quadrant-btn" id="btn-top-2" onclick="handleAnswer(2, 'top')" disabled>2</button>
+                <button class="quadrant-btn" id="btn-top-3" onclick="handleAnswer(3, 'top')" disabled>3</button>
+                <button class="quadrant-btn" id="btn-top-4" onclick="handleAnswer(4, 'top')" disabled>4</button>
+            </div>
+
+            <div class="button-row">
+                <button class="quadrant-btn" id="btn-bottom-1" onclick="handleAnswer(1, 'bottom')" disabled>1</button>
+                <button class="quadrant-btn" id="btn-bottom-2" onclick="handleAnswer(2, 'bottom')" disabled>2</button>
+                <button class="quadrant-btn" id="btn-bottom-3" onclick="handleAnswer(3, 'bottom')" disabled>3</button>
+                <button class="quadrant-btn" id="btn-bottom-4" onclick="handleAnswer(4, 'bottom')" disabled>4</button>
+            </div>
+        </div>
+
+        <div id="resultMessage"></div>
+    </div>
+
+    <script>
+        let gameState = {
+            isPlaying: false,
+            currentQuestion: 0,
+            totalQuestions: 20,
+            correctAnswers: 0,
+            incorrectAnswers: 0,
+            currentSymbol: null, // 'plus' or 'arrow'
+            currentQuadrant: null, // 1, 2, 3, or 4
+            waitingForAnswer: false
+        };
+
+        function startGame() {
+            gameState = {
+                isPlaying: true,
+                currentQuestion: 0,
+                totalQuestions: 20,
+                correctAnswers: 0,
+                incorrectAnswers: 0,
+                currentSymbol: null,
+                currentQuadrant: null,
+                waitingForAnswer: false
+            };
+
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('gameArea').style.display = 'block';
+            document.getElementById('resultMessage').innerHTML = '';
+
+            updateStats();
+
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            if (gameState.currentQuestion >= gameState.totalQuestions) {
+                endGame();
+                return;
+            }
+
+            gameState.currentQuestion++;
+            gameState.waitingForAnswer = true;
+
+            // Random symbol: plus or arrow
+            gameState.currentSymbol = Math.random() < 0.5 ? 'plus' : 'arrow';
+
+            // Random quadrant: 1, 2, 3, or 4
+            gameState.currentQuadrant = Math.floor(Math.random() * 4) + 1;
+
+            // Clear all quadrants
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`q${i}`).innerHTML = '';
+            }
+
+            // Display symbol in the selected quadrant
+            const symbolHTML = gameState.currentSymbol === 'plus'
+                ? '<span class="symbol-blue">+</span>'
+                : '<span class="symbol-gray">▶</span>';
+
+            document.getElementById(`q${gameState.currentQuadrant}`).innerHTML = symbolHTML;
+
+            // Enable buttons
+            enableButtons(true);
+
+            updateStats();
+        }
+
+        function handleAnswer(quadrant, row) {
+            if (!gameState.waitingForAnswer) return;
+
+            gameState.waitingForAnswer = false;
+            enableButtons(false);
+
+            // Check if answer is correct
+            let isCorrect = false;
+            if (gameState.currentSymbol === 'plus' && row === 'top' && quadrant === gameState.currentQuadrant) {
+                isCorrect = true;
+            } else if (gameState.currentSymbol === 'arrow' && row === 'bottom' && quadrant === gameState.currentQuadrant) {
+                isCorrect = true;
+            }
+
+            // Update stats
+            if (isCorrect) {
+                gameState.correctAnswers++;
+                showFeedback(quadrant, row, 'correct');
+            } else {
+                gameState.incorrectAnswers++;
+                showFeedback(quadrant, row, 'incorrect');
+            }
+
+            updateStats();
+
+            // Next question after delay
+            setTimeout(() => {
+                clearFeedback();
+                nextQuestion();
+            }, 800);
+        }
+
+        function showFeedback(quadrant, row, type) {
+            const btnId = `btn-${row}-${quadrant}`;
+            const btn = document.getElementById(btnId);
+            btn.classList.add(type);
+        }
+
+        function clearFeedback() {
+            const buttons = document.querySelectorAll('.quadrant-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('correct', 'incorrect');
+            });
+        }
+
+        function enableButtons(enabled) {
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`btn-top-${i}`).disabled = !enabled;
+                document.getElementById(`btn-bottom-${i}`).disabled = !enabled;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('questionNum').textContent = gameState.currentQuestion;
+            document.getElementById('correctNum').textContent = gameState.correctAnswers;
+            document.getElementById('incorrectNum').textContent = gameState.incorrectAnswers;
+
+            const total = gameState.correctAnswers + gameState.incorrectAnswers;
+            const accuracy = total > 0 ? Math.round((gameState.correctAnswers / total) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        function endGame() {
+            gameState.isPlaying = false;
+            enableButtons(false);
+
+            const accuracy = Math.round((gameState.correctAnswers / gameState.totalQuestions) * 100);
+
+            document.getElementById('displayArea').innerHTML = `
+                <div class="countdown" style="font-size: 36px; grid-column: 1 / -1; grid-row: 1 / -1;">
+                    训练完成！<br>
+                    <span style="font-size: 24px; color: #666;">正确率: ${accuracy}%</span>
+                </div>
+            `;
+
+            let message = '';
+            if (accuracy >= 90) {
+                message = `🎉 优秀！正确率 ${accuracy}%，反应能力出色！`;
+            } else if (accuracy >= 75) {
+                message = `👍 良好！正确率 ${accuracy}%，继续保持！`;
+            } else if (accuracy >= 60) {
+                message = `💪 及格！正确率 ${accuracy}%，还需加强练习！`;
+            } else {
+                message = `📚 正确率 ${accuracy}%，多加练习，相信你会进步！`;
+            }
+
+            document.getElementById('resultMessage').innerHTML = `
+                <div class="result-final">
+                    ${message}
+                </div>
+            `;
+
+            document.getElementById('startBtn').disabled = false;
+        }
+
+        function resetGame() {
+            gameState = {
+                isPlaying: false,
+                currentQuestion: 0,
+                totalQuestions: 20,
+                correctAnswers: 0,
+                incorrectAnswers: 0,
+                currentSymbol: null,
+                currentQuadrant: null,
+                waitingForAnswer: false
+            };
+
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('resultMessage').innerHTML = '';
+
+            updateStats();
+            clearFeedback();
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (!gameState.waitingForAnswer) return;
+
+            const key = e.key.toLowerCase();
+
+            // Top row: Q, W, E, R for quadrants 1-4
+            if (key === 'q') handleAnswer(1, 'top');
+            else if (key === 'w') handleAnswer(2, 'top');
+            else if (key === 'e') handleAnswer(3, 'top');
+            else if (key === 'r') handleAnswer(4, 'top');
+
+            // Bottom row: A, S, D, F for quadrants 1-4
+            else if (key === 'a') handleAnswer(1, 'bottom');
+            else if (key === 's') handleAnswer(2, 'bottom');
+            else if (key === 'd') handleAnswer(3, 'bottom');
+            else if (key === 'f') handleAnswer(4, 'bottom');
+        });
+    </script>
+</body>
+</html>
