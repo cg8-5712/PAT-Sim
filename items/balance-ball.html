@@ -1117,6 +1117,7 @@
             // 更新统计
             gameState.stats.gamesPlayed++;
             let score = 0;
+            let details = null;
             
             if (success) {
                 gameState.stats.successCount++;
@@ -1134,6 +1135,13 @@
                 
                 score = Math.max(0, Math.round(100 - timePenalty - deviationPenalty));
                 gameState.stats.lastScore = score;
+                
+                details = {
+                    base: 100,
+                    timePenalty: timePenalty,
+                    deviationPenalty: deviationPenalty,
+                    avgDeviation: avgDeviation
+                };
             } else {
                 gameState.stats.failCount++;
                 gameState.stats.lastScore = 0;
@@ -1141,11 +1149,11 @@
             updateStats();
 
             // 显示结果
-            showResult(success, message, score);
+            showResult(success, message, score, details);
         }
 
         // 显示结果模态框
-        function showResult(success, message, score) {
+        function showResult(success, message, score, details) {
             const modal = document.getElementById('resultModal');
             const overlay = document.getElementById('modalOverlay');
             const title = document.getElementById('resultTitle');
@@ -1155,11 +1163,36 @@
 
             title.textContent = success ? '🎉 挑战成功！' : '❌ 挑战失败';
             title.className = 'result-title ' + (success ? 'success' : 'fail');
-            info.textContent = message;
             
-            if (success) {
+            // 重置内容
+            info.innerHTML = '';
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = message;
+            info.appendChild(msgDiv);
+            
+            if (success && details) {
                 scoreDisplay.textContent = score + '分';
                 scoreDisplay.style.display = 'block';
+                
+                const breakdown = document.createElement('div');
+                breakdown.style.cssText = 'text-align: left; font-size: 14px; color: #666; margin-top: 15px; background: #f5f5f5; padding: 15px; border-radius: 8px;';
+                breakdown.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span>基础分</span> <span>${details.base}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:#f44336;">
+                        <span>时间惩罚 (${gameState.elapsedTime.toFixed(1)}s × 0.5)</span> 
+                        <span>-${details.timePenalty.toFixed(1)}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:#f44336;">
+                        <span>偏移惩罚 (平均${details.avgDeviation.toFixed(1)}px × 0.2)</span> 
+                        <span>-${details.deviationPenalty.toFixed(1)}</span>
+                    </div>
+                    <div style="border-top:1px solid #ddd; margin-top:10px; padding-top:10px; display:flex; justify-content:space-between; font-weight:bold; color:#333;">
+                        <span>最终得分</span> <span>${score}</span>
+                    </div>
+                `;
+                info.appendChild(breakdown);
             } else {
                 scoreDisplay.style.display = 'none';
             }
@@ -1184,6 +1217,8 @@
             document.getElementById('failCount').textContent = gameState.stats.failCount;
             document.getElementById('bestTime').textContent = 
                 gameState.stats.bestTime !== null ? gameState.stats.bestTime.toFixed(2) + '秒' : '--';
+            document.getElementById('lastScore').textContent = 
+                gameState.stats.lastScore !== null ? gameState.stats.lastScore : '--';
         }
 
         // 重置统计
@@ -1193,7 +1228,8 @@
                     gamesPlayed: 0,
                     successCount: 0,
                     failCount: 0,
-                    bestTime: null
+                    bestTime: null,
+                    lastScore: null
                 };
                 updateStats();
             }
