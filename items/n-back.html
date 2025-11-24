@@ -11,48 +11,58 @@
             box-sizing: border-box;
         }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
             line-height: 1.6;
             margin: 0;
             padding: 20px;
-            background-color: #f9f9f9;
+            background-color: #f5f7fa;
             color: #333;
         }
         header {
-            background-color: #0078d7;
+            background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
             color: white;
-            padding: 20px;
+            padding: 30px;
             text-align: center;
-            border-radius: 8px;
+            border-radius: 12px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
         }
         header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
         }
         .container {
-            max-width: 700px;
+            max-width: 900px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 25px;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
         }
         .instructions {
-            background: #e8f4fc;
-            padding: 20px;
-            border-radius: 8px;
+            background: #e3f2fd;
+            padding: 25px;
+            border-radius: 12px;
             margin-bottom: 20px;
-            border: 1px solid #0078d7;
+            border: 2px solid #1e88e5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         .instructions h2 {
-            color: #0078d7;
-            margin-bottom: 10px;
+            color: #1565c0;
+            margin-bottom: 12px;
             font-size: 18px;
+            font-weight: 600;
         }
         .instructions p {
             line-height: 1.8;
             margin-bottom: 10px;
+            color: #424242;
+            font-size: 15px;
         }
         .controls {
             display: flex;
@@ -65,25 +75,33 @@
             white-space: nowrap;
         }
         .controls input {
-            padding: 8px;
+            padding: 10px;
             font-size: 16px;
             width: 80px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .controls input:focus {
+            outline: none;
+            border-color: #1e88e5;
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.1);
         }
         .controls button {
             flex: 1;
-            padding: 10px 20px;
+            padding: 14px 35px;
             font-size: 16px;
+            font-weight: 600;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s;
-            background-color: #0078d7;
+            transition: all 0.3s ease;
+            background-color: #1e88e5;
             color: white;
         }
         .controls button:hover:not(:disabled) {
-            background-color: #005bb5;
+            background-color: #1565c0;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4);
         }
         button:disabled {
             opacity: 0.6;
@@ -96,48 +114,53 @@
             margin-bottom: 20px;
         }
         .stat-item {
-            background: #e8f4fc;
-            border: 1px solid #0078d7;
-            padding: 15px;
-            border-radius: 4px;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 8px;
             text-align: center;
         }
         .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
+            font-size: 14px;
+            color: #757575;
+            margin-bottom: 8px;
         }
         .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #0078d7;
+            font-size: 36px;
+            font-weight: 700;
+            color: #1e88e5;
         }
         #test-area {
             text-align: center;
             margin-bottom: 20px;
         }
         #current-item {
-            font-size: 48px;
-            font-weight: bold;
-            color: #0078d7;
-            margin: 40px 0;
-            min-height: 80px;
+            font-size: 64px;
+            font-weight: 700;
+            color: #1e88e5;
+            margin: 50px 0;
+            min-height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #e3f2fd;
+            border-radius: 12px;
+            border: 3px solid #bbdefb;
         }
         #test-area button {
-            background-color: #0078d7;
+            background-color: #1e88e5;
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 4px;
+            padding: 14px 35px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.3s;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
         #test-area button:hover {
-            background-color: #005bb5;
+            background-color: #1565c0;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4);
         }
         #input-area {
             margin-top: 20px;
@@ -150,46 +173,58 @@
             font-weight: bold;
         }
         #input-area input {
-            padding: 10px;
-            font-size: 18px;
+            padding: 12px;
+            font-size: 20px;
             width: 100px;
             text-align: center;
-            border: 2px solid #0078d7;
-            border-radius: 4px;
+            border: 2px solid #1e88e5;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        #input-area input:focus {
+            outline: none;
+            border-color: #1565c0;
+            box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.2);
         }
         #input-area button {
-            background-color: #0078d7;
+            background-color: #1e88e5;
             color: white;
             border: none;
-            padding: 10px 25px;
-            border-radius: 4px;
+            padding: 12px 30px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
         #input-area button:hover {
-            background-color: #005bb5;
+            background-color: #1565c0;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4);
         }
         .result {
             margin-top: 20px;
-            padding: 20px;
-            background-color: #e8f4fc;
-            border: 1px solid #0078d7;
-            border-radius: 8px;
+            padding: 25px;
+            background-color: #e3f2fd;
+            border: 2px solid #bbdefb;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         .result h2 {
-            color: #0078d7;
-            margin-bottom: 15px;
-            font-size: 20px;
+            color: #1565c0;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 600;
         }
         .result p {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             line-height: 1.8;
+            color: #424242;
         }
         .result-score {
-            font-size: 20px;
-            font-weight: bold;
-            color: #0078d7;
-            margin-top: 15px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e88e5;
+            margin-top: 20px;
         }
     </style>
 </head>

@@ -1,101 +1,407 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>数字排序测试</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026民航招飞PAT新题型 - 数字排序测试</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
             padding: 20px;
-            background-color: #f9f9f9;
-            color: #333;
         }
-        .controls {
-            margin-bottom: 20px;
-        }
-        .controls label {
-            margin-right: 10px;
-        }
-        .controls input, .controls select {
-            margin-right: 20px;
-        }
-        .grid {
-            display: grid;
-            gap: 5px;
-            margin: 20px auto;
-            max-width: 600px;
-            width: 100%;
-            aspect-ratio: 1 / 1;
-        }
-        .grid button {
-            width: 100%;
-            height: 100%;
-            aspect-ratio: 1 / 1;
-            padding: 10px;
-            font-size: 18px;
-            text-align: center;
-            background-color: #0078d7;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .grid button.hidden {
-            background-color: #ccc;
-            color: #ccc;
-        }
-        .result {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #e8f4fc;
-            border: 1px solid #0078d7;
-            border-radius: 8px;
-        }
-        table {
-            max-width: 400px;
-            width: 400px;
-            height: 400px;
-            border-collapse: collapse;
+
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
         }
-        td {
-            border: 1px solid #333;
-            padding: 5px;
+
+        .header {
+            background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
             text-align: center;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header h2 {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            font-weight: normal;
+        }
+
+        .instruction {
+            background: #e3f2fd;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid #1e88e5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .instruction h3 {
+            color: #1565c0;
+            margin-bottom: 12px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .instruction p {
+            color: #424242;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .main-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .controls label {
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .controls select {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .controls select:hover {
+            border-color: #667eea;
+        }
+
+        .controls select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 14px 35px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #1e88e5;
+            color: white;
+        }
+
+        .btn:hover {
+            background: #1565c0;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #78909c;
+        }
+        
+        .btn-secondary:hover {
+            background: #607d8b;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .grid {
+            display: grid;
+            gap: 8px;
+            margin: 30px auto;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .grid button {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            padding: 0;
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+            background: white;
+            color: #1e88e5;
+            border: 3px solid #e3f2fd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .grid button:hover:not(.hidden):not(:disabled) {
+            background: #e3f2fd;
+            border-color: #1e88e5;
+            transform: scale(1.05);
+        }
+
+        .grid button.hidden {
+            background: #eceff1;
+            color: #eceff1;
+            border-color: #cfd8dc;
+            cursor: default;
+            box-shadow: none;
+        }
+
+        .grid button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .result h2 {
+            color: #1565c0;
+            font-size: 26px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .result-info {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid #bbdefb;
+        }
+
+        .result-info p {
+            font-size: 18px;
+            color: #424242;
+            margin-bottom: 10px;
+        }
+
+        .result-info .time {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1e88e5;
+            margin: 15px 0;
+        }
+
+        .result-table-title {
+            text-align: center;
+            color: #1565c0;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 25px 0 15px 0;
+        }
+
+        table {
+            max-width: 500px;
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        td {
+            border: 2px solid #e0e0e0;
+            padding: 12px;
+            text-align: center;
+            font-size: 16px;
+            background: white;
+        }
+
+        td > div {
+            line-height: 1.4;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: #fafafa;
+            min-width: 120px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1e88e5;
+        }
+
+        .stat-label {
             font-size: 14px;
-            width: calc(400px / var(--grid-size, 6));
-            height: calc(400px / var(--grid-size, 6));
+            color: #757575;
+            margin-top: 8px;
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 22px;
+            color: #1e88e5;
+            font-weight: 600;
+            margin: 20px 0;
+            padding: 18px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e3f2fd;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header h2 {
+                font-size: 16px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-group {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .grid {
+                max-width: 100%;
+            }
+
+            .grid button {
+                font-size: 18px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            td {
+                padding: 8px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>数字排序测试</h1>
-    <div class="controls">
-        <label for="grid-size">表格大小:</label>
-        <select id="grid-size">
-            <option value="6">6x6</option>
-            <option value="8">8x8</option>
-        </select>
-        <label for="number-count">数字量:</label>
-        <select id="number-count">
-            <option value="8">1-8</option>
-            <option value="10">1-10</option>
-            <option value="12">1-12</option>
-        </select>
-        <label for="time-limit">时间限制:</label>
-        <select id="time-limit">
-            <option value="6">6秒</option>
-            <option value="8">8秒</option>
-            <option value="10">10秒</option>
-        </select>
-        <button onclick="startTest()">开始测试</button>
+    <div class="container">
+        <div class="header">
+            <h1>2026民航招飞PAT新题型</h1>
+            <h2>数字排序测试</h2>
+        </div>
+
+        <div class="instruction">
+            <h3>测试方法说明</h3>
+            <p>屏幕上会显示一个网格，其中包含随机排列的数字。在规定时间内记住这些数字的位置，时间结束后数字会被隐藏，请按照从小到大的顺序点击数字。</p>
+        </div>
+
+        <div class="main-section">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="grid-size">表格大小:</label>
+                    <select id="grid-size">
+                        <option value="6">6x6</option>
+                        <option value="8">8x8</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="number-count">数字量:</label>
+                    <select id="number-count">
+                        <option value="8">1-8</option>
+                        <option value="10">1-10</option>
+                        <option value="12">1-12</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="time-limit">记忆时间:</label>
+                    <select id="time-limit">
+                        <option value="6">6秒</option>
+                        <option value="8">8秒</option>
+                        <option value="10">10秒</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="startTest()">开始测试</button>
+            </div>
+
+            <div id="timer" class="timer" style="display: none;"></div>
+
+            <div id="grid-container" class="grid" style="display: none;"></div>
+        </div>
+
+        <div id="result" class="result" style="display: none;"></div>
+
+        <div class="stats-section">
+            <div class="stat-item">
+                <div class="stat-value" id="testCount">0</div>
+                <div class="stat-label">测试次数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="avgTime">0.00秒</div>
+                <div class="stat-label">平均用时</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="bestTime">--</div>
+                <div class="stat-label">最佳成绩</div>
+            </div>
+        </div>
     </div>
-
-    <div id="grid-container" class="grid" style="display: none;"></div>
-
-    <div id="result" class="result" style="display: none;"></div>
 
     <script>
         let gridSize = 6;
@@ -104,11 +410,23 @@
         let numbers = [];
         let userClicks = [];
         let startTime;
+        let timerInterval;
+        let remainingTime;
+        
+        // 统计数据
+        let stats = {
+            testCount: 0,
+            totalTime: 0,
+            bestTime: null
+        };
 
         function startTest() {
             gridSize = parseInt(document.getElementById('grid-size').value, 10);
             numberCount = parseInt(document.getElementById('number-count').value, 10);
             timeLimit = parseInt(document.getElementById('time-limit').value, 10);
+
+            userClicks = [];
+            remainingTime = timeLimit;
 
             generateNumbers();
             renderGrid();
@@ -116,8 +434,27 @@
             document.getElementById('grid-container').style.display = 'grid';
             document.getElementById('grid-container').style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
             document.getElementById('result').style.display = 'none';
+            document.getElementById('timer').style.display = 'block';
 
-            setTimeout(hideNumbers, timeLimit * 1000);
+            updateTimer();
+            timerInterval = setInterval(() => {
+                remainingTime--;
+                updateTimer();
+                if (remainingTime <= 0) {
+                    clearInterval(timerInterval);
+                    hideNumbers();
+                }
+            }, 1000);
+        }
+
+        function updateTimer() {
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = `⏱️ 记忆时间: ${remainingTime} 秒`;
+            if (remainingTime <= 3) {
+                timerElement.style.color = '#f44336';
+            } else {
+                timerElement.style.color = '#667eea';
+            }
         }
 
         function generateNumbers() {
@@ -144,6 +481,7 @@
                     button.classList.add('hidden');
                 }
             });
+            document.getElementById('timer').style.display = 'none';
             startTime = Date.now();
         }
 
@@ -159,21 +497,55 @@
         }
 
         function endTest() {
+            clearInterval(timerInterval);
             const endTime = Date.now();
             const timeTaken = ((endTime - startTime) / 1000).toFixed(2);
             const correct = userClicks.every((val, index) => val === index + 1);
 
+            // 更新统计数据
+            stats.testCount++;
+            stats.totalTime += parseFloat(timeTaken);
+            if (stats.bestTime === null || parseFloat(timeTaken) < stats.bestTime) {
+                stats.bestTime = parseFloat(timeTaken);
+            }
+            updateStats();
+
             document.getElementById('grid-container').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
             const resultDiv = document.getElementById('result');
             resultDiv.style.display = 'block';
+            
+            let feedback = '';
+            if (correct) {
+                feedback = '<p style="color: #4caf50; font-size: 20px; font-weight: bold; margin: 15px 0;">🎉 完全正确！</p>';
+            } else {
+                const correctCount = userClicks.filter((val, index) => val === index + 1).length;
+                const accuracy = Math.round((correctCount / numberCount) * 100);
+                feedback = `<p style="color: #f44336; font-size: 20px; font-weight: bold; margin: 15px 0;">❌ 正确率: ${accuracy}%</p>`;
+            }
+
             resultDiv.innerHTML = `
                 <h2>测试结果</h2>
-                <p>用时: ${timeTaken} 秒</p>
-                <h3>完整表格:</h3>
-                <table style="border-collapse: collapse; width: 100%;">
+                <div class="result-info">
+                    ${feedback}
+                    <p>完成用时:</p>
+                    <div class="time">${timeTaken} 秒</div>
+                </div>
+                <div class="result-table-title">📊 完整表格对照</div>
+                <table>
                     ${generateResultTable()}
                 </table>
+                <div style="text-align: center; margin-top: 25px;">
+                    <button class="btn" onclick="startTest()">再测一次</button>
+                </div>
             `;
+        }
+
+        function updateStats() {
+            document.getElementById('testCount').textContent = stats.testCount;
+            const avgTime = stats.testCount > 0 ? (stats.totalTime / stats.testCount).toFixed(2) : '0.00';
+            document.getElementById('avgTime').textContent = avgTime + '秒';
+            document.getElementById('bestTime').textContent = stats.bestTime !== null ? stats.bestTime.toFixed(2) + '秒' : '--';
         }
 
         function generateResultTable() {
