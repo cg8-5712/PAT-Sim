@@ -161,6 +161,7 @@
             justify-content: center;
             gap: 15px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
 
         .wheel {
@@ -185,6 +186,7 @@
             border-radius: 8px;
             cursor: grab;
             user-select: none;
+            touch-action: none;
         }
 
         .wheel-container:active {
@@ -207,7 +209,8 @@
             font-weight: 700;
             color: rgba(255, 255, 255, 0.4);
             text-align: center;
-            padding: 20px 0;
+            height: 80px;
+            line-height: 80px;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
             transition: all 0.2s ease;
         }
@@ -252,6 +255,36 @@
             background: linear-gradient(to top, #263238, transparent);
             pointer-events: none;
             z-index: 2;
+        }
+
+        .wheel-touch-controls {
+            display: none;
+            width: 100%;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .wheel-touch-btn {
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            border-radius: 6px;
+            background: #1e88e5;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            transition: transform 0.1s ease, background 0.2s ease;
+        }
+
+        .wheel-touch-btn:active {
+            transform: scale(0.96);
+        }
+
+        .wheel-touch-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .controls {
@@ -408,6 +441,20 @@
                 font-size: 36px;
             }
 
+            .lock-wheels {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .wheel {
+                width: 100%;
+                max-width: 240px;
+            }
+
+            .wheel-touch-controls {
+                display: flex;
+            }
+
             .result-modal {
                 min-width: 300px;
                 padding: 30px 20px;
@@ -476,6 +523,10 @@
                 <div class="stat-value" id="bestTime">--</div>
                 <div class="stat-label">最快纪录</div>
             </div>
+            <div class="stat-item">
+                <div class="stat-value" id="lastScore">--</div>
+                <div class="stat-label">本次得分</div>
+            </div>
         </div>
     </div>
 
@@ -483,6 +534,7 @@
     <div class="result-modal" id="resultModal">
         <div class="result-title" id="resultTitle">游戏结束</div>
         <div class="result-info" id="resultInfo"></div>
+        <div class="result-score" id="resultScore" style="font-size: 64px; color: #ff9800; font-weight: bold; margin: 10px 0;"></div>
         <div class="result-time" id="resultTime"></div>
         <button class="btn" onclick="closeModal()">继续游戏</button>
     </div>
@@ -497,6 +549,8 @@
             ballY: 0,
             ballVelX: 0,
             ballVelY: 0,
+            totalDeviation: 0,
+            frameCount: 0,
             targetPassword: [],
             currentPassword: [],
             outOfBoundsTime: 0,
@@ -504,7 +558,8 @@
                 gamesPlayed: 0,
                 successCount: 0,
                 failCount: 0,
-                bestTime: null
+                bestTime: null,
+                lastScore: null
             }
         };
 
@@ -587,6 +642,7 @@
                 container.appendChild(gradientBottom);
                 
                 wheel.appendChild(container);
+                wheel.appendChild(createWheelTouchControls(i));
                 lockWheelsDiv.appendChild(wheel);
                 
                 // 初始化位置
@@ -603,6 +659,7 @@
         // 设置轮盘监听器
         function setupWheelListeners() {
             const containers = document.querySelectorAll('.wheel-container');
+            wheelStates.length = 0;
             
             containers.forEach((container, index) => {
                 wheelStates[index] = {
@@ -611,29 +668,86 @@
                     isDragging: false,
                     velocity: 0,
                     lastY: 0,
-                    lastTime: 0
+                    lastTime: 0,
+                    pointerId: null
                 };
-                
-                // 鼠标事件
-                container.addEventListener('mousedown', (e) => startDrag(e, index));
-                document.addEventListener('mousemove', (e) => drag(e, index));
-                document.addEventListener('mouseup', () => endDrag(index));
-                
-                // 触摸事件
-                container.addEventListener('touchstart', (e) => startDrag(e.touches[0], index));
-                container.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                    drag(e.touches[0], index);
-                });
-                container.addEventListener('touchend', () => endDrag(index));
-                
-                // 滚轮事件
+
+                container.addEventListener('pointerdown', (e) => handlePointerDown(e, index));
+                container.addEventListener('pointermove', (e) => handlePointerMove(e, index), { passive: false });
+                container.addEventListener('pointerup', (e) => handlePointerUp(e, index));
+                container.addEventListener('pointercancel', (e) => handlePointerUp(e, index));
+
                 container.addEventListener('wheel', (e) => {
                     e.preventDefault();
                     const delta = e.deltaY > 0 ? 1 : -1;
                     changeWheel(index, delta);
-                });
+                }, { passive: false });
             });
+        }
+
+        // Pointer事件让移动端拖动更顺滑
+        function handlePointerDown(e, index) {
+            if (!gameState.isPlaying) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+            const container = e.currentTarget;
+            const state = wheelStates[index];
+            if (state.isDragging) return;
+
+            state.pointerId = e.pointerId;
+            if (e.pointerType !== 'mouse' && e.cancelable) {
+                e.preventDefault();
+            }
+            if (container.setPointerCapture) {
+                container.setPointerCapture(e.pointerId);
+            }
+            startDrag(e, index);
+        }
+
+        function handlePointerMove(e, index) {
+            const state = wheelStates[index];
+            if (!state.isDragging || state.pointerId !== e.pointerId) return;
+
+            if (e.pointerType !== 'mouse' && e.cancelable) {
+                e.preventDefault();
+            }
+            drag(e, index);
+        }
+
+        function handlePointerUp(e, index) {
+            const state = wheelStates[index];
+            if (!state.isDragging || state.pointerId !== e.pointerId) return;
+
+            const container = e.currentTarget;
+            if (container.hasPointerCapture && container.hasPointerCapture(e.pointerId)) {
+                container.releasePointerCapture(e.pointerId);
+            }
+            state.pointerId = null;
+            endDrag(index);
+        }
+
+        // 触控端备用按钮，方便精细调整
+        function createWheelTouchControls(index) {
+            const controls = document.createElement('div');
+            controls.className = 'wheel-touch-controls';
+
+            const upBtn = document.createElement('button');
+            upBtn.type = 'button';
+            upBtn.className = 'wheel-touch-btn';
+            upBtn.setAttribute('aria-label', '向上调整数字');
+            upBtn.textContent = '▲';
+            upBtn.addEventListener('click', () => changeWheel(index, -1));
+
+            const downBtn = document.createElement('button');
+            downBtn.type = 'button';
+            downBtn.className = 'wheel-touch-btn';
+            downBtn.setAttribute('aria-label', '向下调整数字');
+            downBtn.textContent = '▼';
+            downBtn.addEventListener('click', () => changeWheel(index, 1));
+
+            controls.appendChild(upBtn);
+            controls.appendChild(downBtn);
+            return controls;
         }
 
         function startDrag(e, index) {
@@ -649,9 +763,6 @@
             // 拖动时禁用过渡动画
             const strip = document.getElementById(`wheelStrip${index}`);
             strip.classList.add('dragging');
-            
-            // 记录初始top值
-            state.initialTop = parseInt(strip.style.top) || 0;
         }
 
         function drag(e, index) {
@@ -667,60 +778,25 @@
             state.lastY = e.clientY;
             state.lastTime = Date.now();
             
-            const totalDelta = e.clientY - state.startY;
-            
-            // 使用更精细的像素级移动
             const strip = document.getElementById(`wheelStrip${index}`);
-            const currentTop = parseInt(strip.style.top) || 0;
-            const newTop = currentTop + deltaY;
+            let currentTop = parseInt(strip.style.top) || 0;
+            let newTop = currentTop + deltaY;
+            
+            // 无限滚动逻辑：保持在中间区域
+            // 每一组高度 800px (10 * 80)
+            // 中间组大致范围 -700 到 -1420
+            // 如果偏离太远，瞬间跳转回中间组
+            if (newTop > -300) { // 向上滚动过多（看到第一组）
+                newTop -= 800;
+            } else if (newTop < -1800) { // 向下滚动过多（看到第三组）
+                newTop += 800;
+            }
             
             // 直接设置位置
             strip.style.top = newTop + 'px';
             
-            // 检查是否需要吸附（数字的2/3进入高亮区域）
-            checkAndSnapToNumber(index, newTop);
-        }
-
-        // 检查并吸附到最近的数字
-        function checkAndSnapToNumber(index, currentTop) {
-            const itemHeight = 80; // 每个数字的高度
-            const centerOffset = 100; // 中心偏移量
-            const snapThreshold = itemHeight * (1/3); // 当数字移动超过2/3时吸附
-            
-            // 计算当前最接近中心的数字
-            const offset = currentTop + 10 * itemHeight - centerOffset;
-            const nearestValue = Math.round(-offset / itemHeight);
-            const normalizedValue = ((nearestValue % 10) + 10) % 10;
-            
-            // 计算距离最近数字的偏移量
-            const targetTop = -(nearestValue * itemHeight + 10 * itemHeight - centerOffset);
-            const distanceToTarget = Math.abs(currentTop - targetTop);
-            
-            // 如果超过2/3进入该数字区域，自动吸附
-            if (distanceToTarget < snapThreshold) {
-                gameState.currentPassword[index] = normalizedValue;
-                snapToValue(index, normalizedValue);
-            } else {
-                // 更新当前显示的活动数字（但不吸附）
-                updateActiveNumberByPosition(index, currentTop);
-            }
-        }
-
-        // 吸附到指定数字
-        function snapToValue(index, value) {
-            const strip = document.getElementById(`wheelStrip${index}`);
-            strip.classList.remove('dragging');
-            
-            // 立即吸附到该数字
-            updateWheelPosition(index, value);
-            
-            // 短暂延迟后恢复拖动状态（如果仍在拖动）
-            setTimeout(() => {
-                const state = wheelStates[index];
-                if (state.isDragging) {
-                    strip.classList.add('dragging');
-                }
-            }, 50);
+            // 仅更新视觉高亮，不吸附
+            updateActiveNumberByPosition(index, newTop);
         }
 
         // 根据位置更新活动数字状态
@@ -729,17 +805,17 @@
             const itemHeight = 80;
             const centerOffset = 100;
             
-            // 计算当前位置对应的数字
-            const offset = currentTop + 10 * itemHeight - centerOffset;
-            const nearestValue = Math.round(-offset / itemHeight);
-            const normalizedValue = ((nearestValue % 10) + 10) % 10;
+            // 计算当前位置对应的数字索引 k
+            // currentTop = -(k * 80 - 100) => k = (100 - currentTop) / 80
+            const k = Math.round((centerOffset - currentTop) / itemHeight);
+            const normalizedValue = ((k % 10) + 10) % 10;
             
-            // 更新活动状态（不改变实际密码值）
+            // 更新活动状态
             const numbers = strip.querySelectorAll('.wheel-number');
             numbers.forEach((num, idx) => {
                 const numValue = parseInt(num.dataset.value);
-                const isActive = (idx >= 10 && idx < 20 && numValue === normalizedValue);
-                if (isActive) {
+                // 高亮所有匹配值的数字，确保滚动过程中视觉一致
+                if (numValue === normalizedValue) {
                     num.classList.add('active');
                 } else {
                     num.classList.remove('active');
@@ -753,22 +829,49 @@
             
             state.isDragging = false;
             
-            // 自动对齐到当前密码值
+            // 拖动结束，吸附到最近的数字
             snapToNearest(index);
         }
 
-        // 自动对齐到最近的数字
+        // 吸附到最近的数字
         function snapToNearest(index) {
             const strip = document.getElementById(`wheelStrip${index}`);
+            const itemHeight = 80;
+            const centerOffset = 100;
             
-            // 移除拖动状态，启用过渡动画
+            const currentTop = parseInt(strip.style.top) || 0;
+            
+            // 计算最近的索引 k
+            const k = Math.round((centerOffset - currentTop) / itemHeight);
+            
+            // 目标位置
+            const targetTop = -(k * itemHeight - centerOffset);
+            
+            // 启用过渡动画
             strip.classList.remove('dragging');
+            strip.style.top = targetTop + 'px';
             
-            // 确保位置对齐到正确的数字，带平滑过渡
+            // 更新密码
+            const normalizedValue = ((k % 10) + 10) % 10;
+            gameState.currentPassword[index] = normalizedValue;
+            updateActiveNumberByPosition(index, targetTop);
+            
+            // 动画结束后，如果不在中间组，则重置位置
             setTimeout(() => {
-                const currentValue = gameState.currentPassword[index];
-                updateWheelPosition(index, currentValue);
-            }, 10);
+                const middleK = normalizedValue + 10; // 中间组对应的索引 (10-19)
+                if (k !== middleK) {
+                    // 瞬间重置位置
+                    strip.classList.add('dragging'); // 禁用动画
+                    strip.offsetHeight; // 强制重绘
+                    const newPos = -(middleK * itemHeight - centerOffset);
+                    strip.style.top = newPos + 'px';
+                    
+                    // 下一帧移除dragging类，以便下次交互
+                    requestAnimationFrame(() => {
+                        strip.classList.remove('dragging');
+                    });
+                }
+            }, 300); // 等待CSS过渡完成 (0.3s)
         }
 
         // 更新轮盘位置（带过渡动画）
@@ -805,7 +908,7 @@
             const numbers = strip.querySelectorAll('.wheel-number');
             numbers.forEach((num, idx) => {
                 const numValue = parseInt(num.dataset.value);
-                const isActive = (idx >= 10 && idx < 20 && numValue === value);
+                const isActive = (numValue === value);
                 if (isActive) {
                     num.classList.add('active');
                 } else {
@@ -824,6 +927,8 @@
             gameState.outOfBoundsTime = 0;
             gameState.ballVelX = 0;
             gameState.ballVelY = 0;
+            gameState.totalDeviation = 0;
+            gameState.frameCount = 0;
 
             document.getElementById('startBtn').disabled = true;
             
@@ -885,6 +990,16 @@
             // 更新位置
             ball.style.left = gameState.ballX + 'px';
             ball.style.top = gameState.ballY + 'px';
+
+            // 计算偏移量 (距离中心的距离)
+            const centerX = boardRect.width / 2 - 20; // 20 is ball radius
+            const centerY = boardRect.height / 2 - 20;
+            const dx = gameState.ballX - centerX;
+            const dy = gameState.ballY - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            gameState.totalDeviation += distance;
+            gameState.frameCount++;
         }
 
         // 检查小球边界
@@ -930,8 +1045,40 @@
         function changeWheel(index, direction) {
             if (!gameState.isPlaying) return;
 
-            gameState.currentPassword[index] = (gameState.currentPassword[index] + direction + 10) % 10;
-            updateWheelPosition(index, gameState.currentPassword[index]);
+            const strip = document.getElementById(`wheelStrip${index}`);
+            const itemHeight = 80;
+            const centerOffset = 100;
+            
+            // 获取当前位置对应的索引 k
+            let currentTop = parseInt(strip.style.top) || 0;
+            let k = Math.round((centerOffset - currentTop) / itemHeight);
+            
+            // 目标索引
+            let targetK = k + direction;
+            
+            // 动画移动到目标索引
+            const targetTop = -(targetK * itemHeight - centerOffset);
+            strip.classList.remove('dragging');
+            strip.style.top = targetTop + 'px';
+            
+            // 更新密码
+            let normalizedValue = ((targetK % 10) + 10) % 10;
+            gameState.currentPassword[index] = normalizedValue;
+            updateActiveNumberByPosition(index, targetTop);
+            
+            // 动画结束后重置位置
+            setTimeout(() => {
+                const middleK = normalizedValue + 10;
+                if (targetK !== middleK) {
+                    strip.classList.add('dragging');
+                    strip.offsetHeight;
+                    const newPos = -(middleK * itemHeight - centerOffset);
+                    strip.style.top = newPos + 'px';
+                    requestAnimationFrame(() => {
+                        strip.classList.remove('dragging');
+                    });
+                }
+            }, 300);
         }
 
         // 键盘控制
@@ -969,32 +1116,55 @@
 
             // 更新统计
             gameState.stats.gamesPlayed++;
+            let score = 0;
+            
             if (success) {
                 gameState.stats.successCount++;
                 if (gameState.stats.bestTime === null || gameState.elapsedTime < gameState.stats.bestTime) {
                     gameState.stats.bestTime = gameState.elapsedTime;
                 }
+                
+                // 计算分数
+                // 基础分 100
+                // 时间惩罚: 每秒 0.5 分
+                // 偏移惩罚: 平均偏移像素 * 0.2
+                const avgDeviation = gameState.frameCount > 0 ? gameState.totalDeviation / gameState.frameCount : 0;
+                const timePenalty = gameState.elapsedTime * 0.5;
+                const deviationPenalty = avgDeviation * 0.2;
+                
+                score = Math.max(0, Math.round(100 - timePenalty - deviationPenalty));
+                gameState.stats.lastScore = score;
             } else {
                 gameState.stats.failCount++;
+                gameState.stats.lastScore = 0;
             }
             updateStats();
 
             // 显示结果
-            showResult(success, message);
+            showResult(success, message, score);
         }
 
         // 显示结果模态框
-        function showResult(success, message) {
+        function showResult(success, message, score) {
             const modal = document.getElementById('resultModal');
             const overlay = document.getElementById('modalOverlay');
             const title = document.getElementById('resultTitle');
             const info = document.getElementById('resultInfo');
             const time = document.getElementById('resultTime');
+            const scoreDisplay = document.getElementById('resultScore');
 
             title.textContent = success ? '🎉 挑战成功！' : '❌ 挑战失败';
             title.className = 'result-title ' + (success ? 'success' : 'fail');
             info.textContent = message;
-            time.textContent = gameState.elapsedTime.toFixed(2) + ' 秒';
+            
+            if (success) {
+                scoreDisplay.textContent = score + '分';
+                scoreDisplay.style.display = 'block';
+            } else {
+                scoreDisplay.style.display = 'none';
+            }
+            
+            time.textContent = '用时: ' + gameState.elapsedTime.toFixed(2) + ' 秒';
 
             modal.classList.add('show');
             overlay.classList.add('show');
