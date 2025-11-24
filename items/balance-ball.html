@@ -540,6 +540,11 @@
     </div>
 
     <script>
+        // 游戏配置
+        const CONFIG = {
+            BALL_SENSITIVITY: 2.5 // 小球控制敏感度，数值越大越灵敏
+        };
+
         // 游戏状态
         const gameState = {
             isPlaying: false,
@@ -1085,7 +1090,7 @@
         document.addEventListener('keydown', (e) => {
             if (!gameState.isPlaying) return;
 
-            const force = 2;
+            const force = CONFIG.BALL_SENSITIVITY;
             switch(e.key) {
                 case 'ArrowUp':
                     gameState.ballVelY -= force;
