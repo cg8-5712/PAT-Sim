@@ -195,7 +195,11 @@
             position: absolute;
             left: 0;
             width: 100%;
-            transition: top 0.1s ease-out;
+            transition: top 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .wheel-strip.dragging {
+            transition: none;
         }
 
         .wheel-number {
@@ -641,6 +645,13 @@
             state.lastY = e.clientY;
             state.lastTime = Date.now();
             state.velocity = 0;
+            
+            // 拖动时禁用过渡动画
+            const strip = document.getElementById(`wheelStrip${index}`);
+            strip.classList.add('dragging');
+            
+            // 记录初始top值
+            state.initialTop = parseInt(strip.style.top) || 0;
         }
 
         function drag(e, index) {
@@ -657,12 +668,83 @@
             state.lastTime = Date.now();
             
             const totalDelta = e.clientY - state.startY;
-            const steps = Math.round(totalDelta / 40); // 每40像素一个数字
             
-            if (Math.abs(steps) > 0) {
-                changeWheel(index, -steps);
-                state.startY = e.clientY;
+            // 使用更精细的像素级移动
+            const strip = document.getElementById(`wheelStrip${index}`);
+            const currentTop = parseInt(strip.style.top) || 0;
+            const newTop = currentTop + deltaY;
+            
+            // 直接设置位置
+            strip.style.top = newTop + 'px';
+            
+            // 检查是否需要吸附（数字的2/3进入高亮区域）
+            checkAndSnapToNumber(index, newTop);
+        }
+
+        // 检查并吸附到最近的数字
+        function checkAndSnapToNumber(index, currentTop) {
+            const itemHeight = 80; // 每个数字的高度
+            const centerOffset = 100; // 中心偏移量
+            const snapThreshold = itemHeight * (1/3); // 当数字移动超过2/3时吸附
+            
+            // 计算当前最接近中心的数字
+            const offset = currentTop + 10 * itemHeight - centerOffset;
+            const nearestValue = Math.round(-offset / itemHeight);
+            const normalizedValue = ((nearestValue % 10) + 10) % 10;
+            
+            // 计算距离最近数字的偏移量
+            const targetTop = -(nearestValue * itemHeight + 10 * itemHeight - centerOffset);
+            const distanceToTarget = Math.abs(currentTop - targetTop);
+            
+            // 如果超过2/3进入该数字区域，自动吸附
+            if (distanceToTarget < snapThreshold) {
+                gameState.currentPassword[index] = normalizedValue;
+                snapToValue(index, normalizedValue);
+            } else {
+                // 更新当前显示的活动数字（但不吸附）
+                updateActiveNumberByPosition(index, currentTop);
             }
+        }
+
+        // 吸附到指定数字
+        function snapToValue(index, value) {
+            const strip = document.getElementById(`wheelStrip${index}`);
+            strip.classList.remove('dragging');
+            
+            // 立即吸附到该数字
+            updateWheelPosition(index, value);
+            
+            // 短暂延迟后恢复拖动状态（如果仍在拖动）
+            setTimeout(() => {
+                const state = wheelStates[index];
+                if (state.isDragging) {
+                    strip.classList.add('dragging');
+                }
+            }, 50);
+        }
+
+        // 根据位置更新活动数字状态
+        function updateActiveNumberByPosition(index, currentTop) {
+            const strip = document.getElementById(`wheelStrip${index}`);
+            const itemHeight = 80;
+            const centerOffset = 100;
+            
+            // 计算当前位置对应的数字
+            const offset = currentTop + 10 * itemHeight - centerOffset;
+            const nearestValue = Math.round(-offset / itemHeight);
+            const normalizedValue = ((nearestValue % 10) + 10) % 10;
+            
+            // 更新活动状态（不改变实际密码值）
+            const numbers = strip.querySelectorAll('.wheel-number');
+            numbers.forEach((num, idx) => {
+                const numValue = parseInt(num.dataset.value);
+                const isActive = (idx >= 10 && idx < 20 && numValue === normalizedValue);
+                if (isActive) {
+                    num.classList.add('active');
+                } else {
+                    num.classList.remove('active');
+                }
+            });
         }
 
         function endDrag(index) {
@@ -671,14 +753,25 @@
             
             state.isDragging = false;
             
-            // 应用惯性滚动
-            if (Math.abs(state.velocity) > 0.5) {
-                const inertiaSteps = Math.round(state.velocity * 5);
-                changeWheel(index, -inertiaSteps);
-            }
+            // 自动对齐到当前密码值
+            snapToNearest(index);
         }
 
-        // 更新轮盘位置
+        // 自动对齐到最近的数字
+        function snapToNearest(index) {
+            const strip = document.getElementById(`wheelStrip${index}`);
+            
+            // 移除拖动状态，启用过渡动画
+            strip.classList.remove('dragging');
+            
+            // 确保位置对齐到正确的数字，带平滑过渡
+            setTimeout(() => {
+                const currentValue = gameState.currentPassword[index];
+                updateWheelPosition(index, currentValue);
+            }, 10);
+        }
+
+        // 更新轮盘位置（带过渡动画）
         function updateWheelPosition(index, value) {
             const strip = document.getElementById(`wheelStrip${index}`);
             const itemHeight = 80; // 每个数字的高度
@@ -689,6 +782,26 @@
             strip.style.top = position + 'px';
             
             // 更新活动状态
+            updateActiveNumber(index, value);
+        }
+
+        // 更新轮盘位置（无过渡，用于拖动）
+        function updateWheelPositionSmooth(index, value) {
+            const strip = document.getElementById(`wheelStrip${index}`);
+            const itemHeight = 80; // 每个数字的高度
+            const centerOffset = 100; // 中心偏移量
+            
+            // 计算位置（在第二组数字上）
+            const position = -(value * itemHeight + 10 * itemHeight - centerOffset);
+            strip.style.top = position + 'px';
+            
+            // 更新活动状态
+            updateActiveNumber(index, value);
+        }
+
+        // 更新活动数字状态
+        function updateActiveNumber(index, value) {
+            const strip = document.getElementById(`wheelStrip${index}`);
             const numbers = strip.querySelectorAll('.wheel-number');
             numbers.forEach((num, idx) => {
                 const numValue = parseInt(num.dataset.value);
