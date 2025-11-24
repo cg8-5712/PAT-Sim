@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026民航招飞PAT新题型 - 平衡密码锁</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header h2 {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            font-weight: normal;
+        }
+
+        .instruction {
+            background: #e3f2fd;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid #1e88e5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .instruction h3 {
+            color: #1565c0;
+            margin-bottom: 12px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .instruction p {
+            color: #424242;
+            line-height: 1.8;
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+
+        .instruction ul {
+            margin-left: 25px;
+            color: #424242;
+            line-height: 1.8;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .balance-section, .lock-section {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .section-title {
+            text-align: center;
+            color: #1565c0;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .balance-board {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: linear-gradient(135deg, #c17a4a 0%, #a0653f 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.2);
+            border: 4px solid #8b5a3c;
+        }
+
+        .ball {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c92a2a);
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.05s ease-out;
+        }
+
+        .timer-display {
+            text-align: center;
+            font-size: 48px;
+            font-weight: 700;
+            color: #1e88e5;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #e3f2fd;
+            border-radius: 8px;
+        }
+
+        .password-display {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .password-digits {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .password-digit {
+            font-size: 56px;
+            font-weight: 700;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .lock-wheels {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .wheel {
+            background: #455a64;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            border: 3px solid #37474f;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wheel-container {
+            width: 100px;
+            height: 280px;
+            position: relative;
+            overflow: hidden;
+            background: #263238;
+            border-radius: 8px;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .wheel-container:active {
+            cursor: grabbing;
+        }
+
+        .wheel-strip {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            transition: top 0.1s ease-out;
+        }
+
+        .wheel-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.4);
+            text-align: center;
+            padding: 20px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        .wheel-number.active {
+            color: white;
+            font-size: 56px;
+            transform: scale(1.1);
+        }
+
+        .wheel-highlight {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 80px;
+            transform: translateY(-50%);
+            background: rgba(255, 215, 0, 0.1);
+            border-top: 3px solid #ffd700;
+            border-bottom: 3px solid #ffd700;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .wheel-gradient-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to bottom, #263238, transparent);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .wheel-gradient-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to top, #263238, transparent);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 14px 35px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #1e88e5;
+            color: white;
+        }
+
+        .btn:hover {
+            background: #1565c0;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4);
+        }
+
+        .btn-secondary {
+            background: #78909c;
+        }
+
+        .btn-secondary:hover {
+            background: #607d8b;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: #fafafa;
+            min-width: 120px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1e88e5;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #757575;
+            margin-top: 8px;
+        }
+
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            min-width: 400px;
+            text-align: center;
+        }
+
+        .result-modal.show {
+            display: block;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .modal-overlay.show {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .result-title.success {
+            color: #4caf50;
+        }
+
+        .result-title.fail {
+            color: #f44336;
+        }
+
+        .result-info {
+            font-size: 18px;
+            color: #424242;
+            margin-bottom: 10px;
+        }
+
+        .result-time {
+            font-size: 48px;
+            font-weight: 700;
+            color: #1e88e5;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 1024px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header h2 {
+                font-size: 16px;
+            }
+
+            .password-digit {
+                font-size: 40px;
+            }
+
+            .wheel-number {
+                font-size: 36px;
+            }
+
+            .result-modal {
+                min-width: 300px;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>2026民航招飞PAT新题型</h1>
+            <h2>平衡密码锁训练</h2>
+        </div>
+
+        <div class="instruction">
+            <h3>测试方法说明</h3>
+            <p><strong>游戏目标：</strong>在保持左侧小球平衡的同时，解开右侧的密码锁。</p>
+            <ul>
+                <li><strong>左侧平衡区：</strong>使用键盘方向键（↑↓←→）或鼠标移动，控制小球保持在棕色区域内</li>
+                <li><strong>右侧密码锁：</strong>点击按钮调整数字，使其与顶部显示的密码一致</li>
+                <li><strong>注意：</strong>小球离开棕色区域超过3秒，游戏失败</li>
+                <li><strong>胜利条件：</strong>在时间耗尽前成功解开密码锁</li>
+            </ul>
+        </div>
+
+        <div class="game-container">
+            <div class="game-area">
+                <div class="balance-section">
+                    <div class="section-title">🎯 平衡控制区</div>
+                    <div class="timer-display" id="timer">0秒</div>
+                    <div class="balance-board" id="balanceBoard">
+                        <div class="ball" id="ball"></div>
+                    </div>
+                </div>
+
+                <div class="lock-section">
+                    <div class="section-title">🔐 密码锁</div>
+                    <div class="password-display">
+                        <div style="color: #757575; margin-bottom: 10px;">目标密码：</div>
+                        <div class="password-digits" id="targetPassword"></div>
+                    </div>
+                    <div class="lock-wheels" id="lockWheels"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="startBtn">开始游戏</button>
+                <button class="btn btn-secondary" id="resetBtn">重置统计</button>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stat-item">
+                <div class="stat-value" id="gamesPlayed">0</div>
+                <div class="stat-label">游戏次数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="successCount">0</div>
+                <div class="stat-label">成功次数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="failCount">0</div>
+                <div class="stat-label">失败次数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="bestTime">--</div>
+                <div class="stat-label">最快纪录</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="result-modal" id="resultModal">
+        <div class="result-title" id="resultTitle">游戏结束</div>
+        <div class="result-info" id="resultInfo"></div>
+        <div class="result-time" id="resultTime"></div>
+        <button class="btn" onclick="closeModal()">继续游戏</button>
+    </div>
+
+    <script>
+        // 游戏状态
+        const gameState = {
+            isPlaying: false,
+            startTime: 0,
+            elapsedTime: 0,
+            ballX: 0,
+            ballY: 0,
+            ballVelX: 0,
+            ballVelY: 0,
+            targetPassword: [],
+            currentPassword: [],
+            outOfBoundsTime: 0,
+            stats: {
+                gamesPlayed: 0,
+                successCount: 0,
+                failCount: 0,
+                bestTime: null
+            }
+        };
+
+        let animationFrame;
+        let timerInterval;
+
+        // 初始化游戏
+        function initGame() {
+            const board = document.getElementById('balanceBoard');
+            const ball = document.getElementById('ball');
+            
+            // 设置小球初始位置（中心）
+            const boardRect = board.getBoundingClientRect();
+            gameState.ballX = boardRect.width / 2 - 20;
+            gameState.ballY = boardRect.height / 2 - 20;
+            ball.style.left = gameState.ballX + 'px';
+            ball.style.top = gameState.ballY + 'px';
+
+            // 生成随机密码（4位数字）
+            gameState.targetPassword = [];
+            for (let i = 0; i < 4; i++) {
+                gameState.targetPassword.push(Math.floor(Math.random() * 10));
+            }
+
+            // 初始化当前密码
+            gameState.currentPassword = [0, 0, 0, 0];
+
+            // 显示目标密码
+            const targetPasswordDiv = document.getElementById('targetPassword');
+            targetPasswordDiv.innerHTML = '';
+            gameState.targetPassword.forEach(digit => {
+                const span = document.createElement('span');
+                span.className = 'password-digit';
+                span.textContent = digit;
+                targetPasswordDiv.appendChild(span);
+            });
+
+            // 创建密码锁轮盘
+            const lockWheelsDiv = document.getElementById('lockWheels');
+            lockWheelsDiv.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                const wheel = document.createElement('div');
+                wheel.className = 'wheel';
+                
+                // 创建轮盘容器
+                const container = document.createElement('div');
+                container.className = 'wheel-container';
+                container.dataset.wheelIndex = i;
+                
+                // 创建数字条带
+                const strip = document.createElement('div');
+                strip.className = 'wheel-strip';
+                strip.id = `wheelStrip${i}`;
+                
+                // 创建数字（重复3次，形成循环效果）
+                for (let repeat = 0; repeat < 3; repeat++) {
+                    for (let num = 0; num < 10; num++) {
+                        const numberDiv = document.createElement('div');
+                        numberDiv.className = 'wheel-number';
+                        numberDiv.textContent = num;
+                        numberDiv.dataset.value = num;
+                        strip.appendChild(numberDiv);
+                    }
+                }
+                
+                container.appendChild(strip);
+                
+                // 添加高亮区域
+                const highlight = document.createElement('div');
+                highlight.className = 'wheel-highlight';
+                container.appendChild(highlight);
+                
+                // 添加渐变遮罩
+                const gradientTop = document.createElement('div');
+                gradientTop.className = 'wheel-gradient-top';
+                container.appendChild(gradientTop);
+                
+                const gradientBottom = document.createElement('div');
+                gradientBottom.className = 'wheel-gradient-bottom';
+                container.appendChild(gradientBottom);
+                
+                wheel.appendChild(container);
+                lockWheelsDiv.appendChild(wheel);
+                
+                // 初始化位置
+                updateWheelPosition(i, 0);
+            }
+            
+            // 添加滚动事件监听
+            setupWheelListeners();
+        }
+
+        // 轮盘滚动相关变量
+        const wheelStates = [];
+
+        // 设置轮盘监听器
+        function setupWheelListeners() {
+            const containers = document.querySelectorAll('.wheel-container');
+            
+            containers.forEach((container, index) => {
+                wheelStates[index] = {
+                    startY: 0,
+                    currentY: 0,
+                    isDragging: false,
+                    velocity: 0,
+                    lastY: 0,
+                    lastTime: 0
+                };
+                
+                // 鼠标事件
+                container.addEventListener('mousedown', (e) => startDrag(e, index));
+                document.addEventListener('mousemove', (e) => drag(e, index));
+                document.addEventListener('mouseup', () => endDrag(index));
+                
+                // 触摸事件
+                container.addEventListener('touchstart', (e) => startDrag(e.touches[0], index));
+                container.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    drag(e.touches[0], index);
+                });
+                container.addEventListener('touchend', () => endDrag(index));
+                
+                // 滚轮事件
+                container.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? 1 : -1;
+                    changeWheel(index, delta);
+                });
+            });
+        }
+
+        function startDrag(e, index) {
+            if (!gameState.isPlaying) return;
+            
+            const state = wheelStates[index];
+            state.isDragging = true;
+            state.startY = e.clientY;
+            state.lastY = e.clientY;
+            state.lastTime = Date.now();
+            state.velocity = 0;
+        }
+
+        function drag(e, index) {
+            if (!gameState.isPlaying) return;
+            
+            const state = wheelStates[index];
+            if (!state.isDragging) return;
+            
+            const deltaY = e.clientY - state.lastY;
+            const deltaTime = Date.now() - state.lastTime;
+            
+            state.velocity = deltaY / deltaTime;
+            state.lastY = e.clientY;
+            state.lastTime = Date.now();
+            
+            const totalDelta = e.clientY - state.startY;
+            const steps = Math.round(totalDelta / 40); // 每40像素一个数字
+            
+            if (Math.abs(steps) > 0) {
+                changeWheel(index, -steps);
+                state.startY = e.clientY;
+            }
+        }
+
+        function endDrag(index) {
+            const state = wheelStates[index];
+            if (!state.isDragging) return;
+            
+            state.isDragging = false;
+            
+            // 应用惯性滚动
+            if (Math.abs(state.velocity) > 0.5) {
+                const inertiaSteps = Math.round(state.velocity * 5);
+                changeWheel(index, -inertiaSteps);
+            }
+        }
+
+        // 更新轮盘位置
+        function updateWheelPosition(index, value) {
+            const strip = document.getElementById(`wheelStrip${index}`);
+            const itemHeight = 80; // 每个数字的高度
+            const centerOffset = 100; // 中心偏移量
+            
+            // 计算位置（在第二组数字上）
+            const position = -(value * itemHeight + 10 * itemHeight - centerOffset);
+            strip.style.top = position + 'px';
+            
+            // 更新活动状态
+            const numbers = strip.querySelectorAll('.wheel-number');
+            numbers.forEach((num, idx) => {
+                const numValue = parseInt(num.dataset.value);
+                const isActive = (idx >= 10 && idx < 20 && numValue === value);
+                if (isActive) {
+                    num.classList.add('active');
+                } else {
+                    num.classList.remove('active');
+                }
+            });
+        }
+
+        // 开始游戏
+        function startGame() {
+            if (gameState.isPlaying) return;
+
+            gameState.isPlaying = true;
+            gameState.startTime = Date.now();
+            gameState.elapsedTime = 0;
+            gameState.outOfBoundsTime = 0;
+            gameState.ballVelX = 0;
+            gameState.ballVelY = 0;
+
+            document.getElementById('startBtn').disabled = true;
+            
+            // 启动计时器
+            timerInterval = setInterval(updateTimer, 100);
+            
+            // 启动游戏循环
+            gameLoop();
+        }
+
+        // 游戏循环
+        function gameLoop() {
+            if (!gameState.isPlaying) return;
+
+            updateBallPhysics();
+            checkBallBounds();
+            checkWinCondition();
+
+            animationFrame = requestAnimationFrame(gameLoop);
+        }
+
+        // 更新小球物理
+        function updateBallPhysics() {
+            const board = document.getElementById('balanceBoard');
+            const ball = document.getElementById('ball');
+            const boardRect = board.getBoundingClientRect();
+
+            // 重力和摩擦力
+            const gravity = 0.3;
+            const friction = 0.95;
+
+            // 应用速度
+            gameState.ballVelY += gravity;
+            gameState.ballX += gameState.ballVelX;
+            gameState.ballY += gameState.ballVelY;
+
+            // 边界碰撞
+            if (gameState.ballX < 0) {
+                gameState.ballX = 0;
+                gameState.ballVelX *= -0.7;
+            }
+            if (gameState.ballX > boardRect.width - 40) {
+                gameState.ballX = boardRect.width - 40;
+                gameState.ballVelX *= -0.7;
+            }
+            if (gameState.ballY < 0) {
+                gameState.ballY = 0;
+                gameState.ballVelY *= -0.7;
+            }
+            if (gameState.ballY > boardRect.height - 40) {
+                gameState.ballY = boardRect.height - 40;
+                gameState.ballVelY *= -0.7;
+            }
+
+            // 应用摩擦力
+            gameState.ballVelX *= friction;
+            gameState.ballVelY *= friction;
+
+            // 更新位置
+            ball.style.left = gameState.ballX + 'px';
+            ball.style.top = gameState.ballY + 'px';
+        }
+
+        // 检查小球边界
+        function checkBallBounds() {
+            const board = document.getElementById('balanceBoard');
+            const boardRect = board.getBoundingClientRect();
+            
+            const isInBounds = gameState.ballX >= 0 && 
+                             gameState.ballX <= boardRect.width - 40 &&
+                             gameState.ballY >= 0 && 
+                             gameState.ballY <= boardRect.height - 40;
+
+            if (!isInBounds) {
+                gameState.outOfBoundsTime += 0.1;
+                if (gameState.outOfBoundsTime >= 3) {
+                    endGame(false, '小球失去平衡超过3秒！');
+                }
+            } else {
+                gameState.outOfBoundsTime = 0;
+            }
+        }
+
+        // 检查胜利条件
+        function checkWinCondition() {
+            const isCorrect = gameState.currentPassword.every((digit, i) => 
+                digit === gameState.targetPassword[i]
+            );
+
+            if (isCorrect) {
+                endGame(true, '成功解开密码锁！');
+            }
+        }
+
+        // 更新计时器
+        function updateTimer() {
+            if (!gameState.isPlaying) return;
+            
+            gameState.elapsedTime = (Date.now() - gameState.startTime) / 1000;
+            document.getElementById('timer').textContent = gameState.elapsedTime.toFixed(1) + '秒';
+        }
+
+        // 改变轮盘数字
+        function changeWheel(index, direction) {
+            if (!gameState.isPlaying) return;
+
+            gameState.currentPassword[index] = (gameState.currentPassword[index] + direction + 10) % 10;
+            updateWheelPosition(index, gameState.currentPassword[index]);
+        }
+
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if (!gameState.isPlaying) return;
+
+            const force = 2;
+            switch(e.key) {
+                case 'ArrowUp':
+                    gameState.ballVelY -= force;
+                    e.preventDefault();
+                    break;
+                case 'ArrowDown':
+                    gameState.ballVelY += force;
+                    e.preventDefault();
+                    break;
+                case 'ArrowLeft':
+                    gameState.ballVelX -= force;
+                    e.preventDefault();
+                    break;
+                case 'ArrowRight':
+                    gameState.ballVelX += force;
+                    e.preventDefault();
+                    break;
+            }
+        });
+
+        // 结束游戏
+        function endGame(success, message) {
+            gameState.isPlaying = false;
+            clearInterval(timerInterval);
+            cancelAnimationFrame(animationFrame);
+
+            document.getElementById('startBtn').disabled = false;
+
+            // 更新统计
+            gameState.stats.gamesPlayed++;
+            if (success) {
+                gameState.stats.successCount++;
+                if (gameState.stats.bestTime === null || gameState.elapsedTime < gameState.stats.bestTime) {
+                    gameState.stats.bestTime = gameState.elapsedTime;
+                }
+            } else {
+                gameState.stats.failCount++;
+            }
+            updateStats();
+
+            // 显示结果
+            showResult(success, message);
+        }
+
+        // 显示结果模态框
+        function showResult(success, message) {
+            const modal = document.getElementById('resultModal');
+            const overlay = document.getElementById('modalOverlay');
+            const title = document.getElementById('resultTitle');
+            const info = document.getElementById('resultInfo');
+            const time = document.getElementById('resultTime');
+
+            title.textContent = success ? '🎉 挑战成功！' : '❌ 挑战失败';
+            title.className = 'result-title ' + (success ? 'success' : 'fail');
+            info.textContent = message;
+            time.textContent = gameState.elapsedTime.toFixed(2) + ' 秒';
+
+            modal.classList.add('show');
+            overlay.classList.add('show');
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('resultModal').classList.remove('show');
+            document.getElementById('modalOverlay').classList.remove('show');
+            initGame();
+        }
+
+        // 更新统计
+        function updateStats() {
+            document.getElementById('gamesPlayed').textContent = gameState.stats.gamesPlayed;
+            document.getElementById('successCount').textContent = gameState.stats.successCount;
+            document.getElementById('failCount').textContent = gameState.stats.failCount;
+            document.getElementById('bestTime').textContent = 
+                gameState.stats.bestTime !== null ? gameState.stats.bestTime.toFixed(2) + '秒' : '--';
+        }
+
+        // 重置统计
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('确定要重置所有统计数据吗？')) {
+                gameState.stats = {
+                    gamesPlayed: 0,
+                    successCount: 0,
+                    failCount: 0,
+                    bestTime: null
+                };
+                updateStats();
+            }
+        });
+
+        // 开始按钮
+        document.getElementById('startBtn').addEventListener('click', startGame);
+
+        // 初始化
+        initGame();
+        updateStats();
+    </script>
+</body>
+</html>
