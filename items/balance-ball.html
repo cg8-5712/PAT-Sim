@@ -1012,8 +1012,8 @@
                 // 通常横屏时：gamma对应屏幕的上下倾斜，beta对应屏幕的左右倾斜
                 
                 // 交换控制轴向以适应横屏操作习惯
-                gameState.ballVelY += (gamma * CONFIG.GYRO_SENSITIVITY); // gamma 控制 Y轴 (上下)
-                gameState.ballVelX += (beta * CONFIG.GYRO_SENSITIVITY);  // beta 控制 X轴 (左右)
+                gameState.ballVelY += (beta * CONFIG.GYRO_SENSITIVITY); // gamma 控制 Y轴 (上下)
+                gameState.ballVelX += (gamma * CONFIG.GYRO_SENSITIVITY);  // beta 控制 X轴 (左右)
             } else {
                 // 键盘模式：固定重力
                 const gravity = 0.3;
