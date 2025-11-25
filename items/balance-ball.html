@@ -418,24 +418,6 @@
             margin: 20px 0;
         }
 
-        .orientation-prompt {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #1e88e5;
-            color: white;
-            z-index: 2000;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            font-size: 18px;
-            line-height: 1.6;
-        }
-
         @media (max-width: 1024px) {
             .game-area {
                 grid-template-columns: 1fr;
@@ -470,7 +452,7 @@
             }
 
             .wheel-touch-controls {
-                display: none;
+                display: flex;
             }
 
             .result-modal {
@@ -478,93 +460,9 @@
                 padding: 30px 20px;
             }
         }
-
-        @media (orientation: landscape) and (max-height: 500px) {
-            body {
-                padding: 10px;
-            }
-            .header {
-                padding: 15px;
-                margin-bottom: 10px;
-            }
-            .header h1 {
-                font-size: 20px;
-            }
-            .header h2 {
-                font-size: 14px;
-            }
-            .instruction {
-                display: none; /* 在横屏时隐藏说明以节省空间 */
-            }
-            .game-container {
-                padding: 15px;
-            }
-            .game-area {
-                grid-template-columns: 1fr 1fr; /* 强制两列布局 */
-                gap: 15px;
-            }
-            .balance-section, .lock-section {
-                padding: 15px;
-            }
-            .timer-display {
-                font-size: 36px;
-                padding: 10px;
-                margin-bottom: 10px;
-            }
-            .password-digit {
-                font-size: 32px;
-            }
-            .lock-wheels {
-                gap: 8px;
-                flex-wrap: nowrap; /* 防止换行 */
-            }
-            .wheel {
-                padding: 8px;
-            }
-            .wheel-container {
-                width: 60px; /* 缩小轮盘宽度 */
-                height: 180px; /* 缩小轮盘高度 */
-            }
-            .wheel-number {
-                font-size: 28px;
-                height: 50px;
-                line-height: 50px;
-            }
-            .wheel-number.active {
-                font-size: 32px;
-            }
-            .wheel-highlight {
-                height: 50px;
-            }
-            .wheel-gradient-top, .wheel-gradient-bottom {
-                height: 65px;
-            }
-            .controls {
-                margin-top: 10px;
-            }
-            .btn {
-                padding: 10px 20px;
-                font-size: 14px;
-            }
-            .stats-section {
-                display: none; /* 隐藏统计信息以节省空间 */
-            }
-        }
-
-        @media (orientation: portrait) and (max-width: 768px) {
-            .orientation-prompt {
-                display: flex;
-            }
-            .container {
-                display: none;
-            }
-        }
     </style>
 </head>
 <body>
-    <div class="orientation-prompt">
-        <p>为了获得最佳体验，请将您的设备旋转至横屏模式。</p>
-    </div>
     <div class="container">
         <div class="header">
             <h1>2026民航招飞PAT新题型</h1>
@@ -857,12 +755,6 @@
 
             controls.appendChild(upBtn);
             controls.appendChild(downBtn);
-
-            // 在非移动设备上显示
-            if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                controls.style.display = 'flex';
-            }
-
             return controls;
         }
 
@@ -974,9 +866,6 @@
             
             // 动画结束后，如果不在中间组，则重置位置
             setTimeout(() => {
-                const itemHeight = /Mobi|Android/i.test(navigator.userAgent) && window.innerHeight <= 500 ? 50 : 80;
-                const centerOffset = /Mobi|Android/i.test(navigator.userAgent) && window.innerHeight <= 500 ? 65 : 100;
-
                 const middleK = normalizedValue + 10; // 中间组对应的索引 (10-19)
                 if (k !== middleK) {
                     // 瞬间重置位置
@@ -996,9 +885,8 @@
         // 更新轮盘位置（带过渡动画）
         function updateWheelPosition(index, value) {
             const strip = document.getElementById(`wheelStrip${index}`);
-            const isMobileLandscape = /Mobi|Android/i.test(navigator.userAgent) && window.innerHeight <= 500;
-            const itemHeight = isMobileLandscape ? 50 : 80; // 每个数字的高度
-            const centerOffset = isMobileLandscape ? 65 : 100; // 中心偏移量
+            const itemHeight = 80; // 每个数字的高度
+            const centerOffset = 100; // 中心偏移量
             
             // 计算位置（在第二组数字上）
             const position = -(value * itemHeight + 10 * itemHeight - centerOffset);
@@ -1011,9 +899,8 @@
         // 更新轮盘位置（无过渡，用于拖动）
         function updateWheelPositionSmooth(index, value) {
             const strip = document.getElementById(`wheelStrip${index}`);
-            const isMobileLandscape = /Mobi|Android/i.test(navigator.userAgent) && window.innerHeight <= 500;
-            const itemHeight = isMobileLandscape ? 50 : 80; // 每个数字的高度
-            const centerOffset = isMobileLandscape ? 65 : 100; // 中心偏移量
+            const itemHeight = 80; // 每个数字的高度
+            const centerOffset = 100; // 中心偏移量
             
             // 计算位置（在第二组数字上）
             const position = -(value * itemHeight + 10 * itemHeight - centerOffset);
@@ -1110,20 +997,23 @@
             if (gameState.useGyro) {
                 // 陀螺仪控制
                 const maxTilt = 30;
-                let beta = gameState.orientation.beta || 0;   // 前后倾斜 (pitch)
-                let gamma = gameState.orientation.gamma || 0; // 左右倾斜 (roll)
-
+                let beta = gameState.orientation.beta || 0;   // 前后倾斜
+                let gamma = gameState.orientation.gamma || 0; // 左右倾斜
+                
                 // 限制最大倾斜角度
                 if (beta > maxTilt) beta = maxTilt;
                 if (beta < -maxTilt) beta = -maxTilt;
                 if (gamma > maxTilt) gamma = maxTilt;
                 if (gamma < -maxTilt) gamma = -maxTilt;
 
-                // 横屏模式下的正确映射：
-                // beta (前后倾斜) -> 控制Y轴（上下移动）
-                // gamma (左右倾斜/旋转) -> 控制X轴（左右移动）
-                gameState.ballVelY += (beta * CONFIG.GYRO_SENSITIVITY);
-                gameState.ballVelX += (gamma * CONFIG.GYRO_SENSITIVITY);
+                // 应用加速度 (替代固定重力)
+                // 修正：左右旋转（gamma）应该控制左右移动（X轴），前后倾斜（beta）控制上下移动（Y轴）
+                // 注意：在横屏模式下，beta和gamma的物理含义相对于屏幕方向会发生变化
+                // 通常横屏时：gamma对应屏幕的上下倾斜，beta对应屏幕的左右倾斜
+                
+                // 交换控制轴向以适应横屏操作习惯
+                gameState.ballVelY += (gamma * CONFIG.GYRO_SENSITIVITY); // gamma 控制 Y轴 (上下)
+                gameState.ballVelX += (beta * CONFIG.GYRO_SENSITIVITY);  // beta 控制 X轴 (左右)
             } else {
                 // 键盘模式：固定重力
                 const gravity = 0.3;
@@ -1215,9 +1105,8 @@
             if (!gameState.isPlaying) return;
 
             const strip = document.getElementById(`wheelStrip${index}`);
-            const isMobileLandscape = /Mobi|Android/i.test(navigator.userAgent) && window.innerHeight <= 500;
-            const itemHeight = isMobileLandscape ? 50 : 80;
-            const centerOffset = isMobileLandscape ? 65 : 100;
+            const itemHeight = 80;
+            const centerOffset = 100;
             
             // 获取当前位置对应的索引 k
             let currentTop = parseInt(strip.style.top) || 0;
