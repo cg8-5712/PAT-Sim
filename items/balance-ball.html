@@ -1119,11 +1119,12 @@
                 if (gamma > maxTilt) gamma = maxTilt;
                 if (gamma < -maxTilt) gamma = -maxTilt;
 
-                // 应用加速度 (替代固定重力)
-                // beta > 0 (顶部远离) -> 小球向上滚动 (Y减小)
-                // gamma > 0 (右侧向下) -> 小球向右滚动 (X增加)
-                gameState.ballVelY -= (beta * CONFIG.GYRO_SENSITIVITY); 
-                gameState.ballVelX += (gamma * CONFIG.GYRO_SENSITIVITY);
+                // 应用加速度（修复横屏模式下的轴向映射）
+                // 在横屏模式下，需要交换轴向：
+                // gamma > 0 (左右倾斜) -> 小球上下移动 (Y增加)
+                // beta > 0 (上下倾斜) -> 小球左右移动 (X减小)
+                gameState.ballVelY += (gamma * CONFIG.GYRO_SENSITIVITY);
+                gameState.ballVelX -= (beta * CONFIG.GYRO_SENSITIVITY);
             } else {
                 // 键盘模式：固定重力
                 const gravity = 0.3;
