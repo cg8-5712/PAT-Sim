@@ -418,6 +418,24 @@
             margin: 20px 0;
         }
 
+        .orientation-prompt {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1e88e5;
+            color: white;
+            z-index: 2000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
         @media (max-width: 1024px) {
             .game-area {
                 grid-template-columns: 1fr;
@@ -452,7 +470,7 @@
             }
 
             .wheel-touch-controls {
-                display: flex;
+                display: none;
             }
 
             .result-modal {
@@ -460,9 +478,21 @@
                 padding: 30px 20px;
             }
         }
+
+        @media (orientation: portrait) and (max-width: 768px) {
+            .orientation-prompt {
+                display: flex;
+            }
+            .container {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="orientation-prompt">
+        <p>为了获得最佳体验，请将您的设备旋转至横屏模式。</p>
+    </div>
     <div class="container">
         <div class="header">
             <h1>2026民航招飞PAT新题型</h1>
@@ -755,6 +785,12 @@
 
             controls.appendChild(upBtn);
             controls.appendChild(downBtn);
+
+            // 在非移动设备上显示
+            if (!/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                controls.style.display = 'flex';
+            }
+
             return controls;
         }
 
