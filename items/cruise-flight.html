@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026民航招飞PAT新题型 - 时间感知匀速飞行</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e88e5 0%, #1565c0 100%);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header h2 {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            font-weight: normal;
+        }
+
+        .instruction {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .instruction h3 {
+            color: #1565c0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .instruction p {
+            color: #424242;
+            line-height: 1.8;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .flight-area {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid #1e88e5;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .clouds {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 200px;
+            transform: translateY(-50%);
+            background: linear-gradient(to bottom,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.9) 20%,
+                rgba(255, 255, 255, 1) 50%,
+                rgba(255, 255, 255, 0.9) 80%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            display: none;
+            z-index: 10;
+        }
+
+        .clouds.show {
+            display: block;
+        }
+
+        .plane {
+            position: absolute;
+            top: 50%;
+            left: 50px;
+            transform: translateY(-50%);
+            font-size: 48px;
+            transition: left linear;
+            z-index: 5;
+        }
+
+        .plane.hidden {
+            opacity: 0;
+        }
+
+        .target {
+            position: absolute;
+            top: 50%;
+            right: 50px;
+            transform: translateY(-50%);
+            width: 30px;
+            height: 30px;
+            background: #f44336;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.8);
+            z-index: 5;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: translateY(-50%) scale(1);
+                box-shadow: 0 0 20px rgba(244, 67, 54, 0.8);
+            }
+            50% {
+                transform: translateY(-50%) scale(1.1);
+                box-shadow: 0 0 30px rgba(244, 67, 54, 1);
+            }
+        }
+
+        .timer-display {
+            text-align: center;
+            font-size: 48px;
+            font-weight: 700;
+            color: #1e88e5;
+            margin: 20px 0;
+            padding: 20px;
+            background: #e3f2fd;
+            border-radius: 8px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 16px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #1e88e5;
+            color: white;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #1565c0;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            font-size: 24px;
+            padding: 20px 50px;
+            animation: btnGlow 2s ease-in-out infinite;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #388e3c;
+        }
+
+        @keyframes btnGlow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(76, 175, 80, 0.8);
+            }
+        }
+
+        .btn-secondary {
+            background: #78909c;
+        }
+
+        .btn-secondary:hover {
+            background: #607d8b;
+        }
+
+        .stats-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: #fafafa;
+            min-width: 150px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1e88e5;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #757575;
+            margin-top: 8px;
+        }
+
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            min-width: 400px;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .result-modal.show {
+            display: block;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .modal-overlay.show {
+            display: block;
+        }
+
+        .result-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #1e88e5;
+        }
+
+        .result-info {
+            font-size: 18px;
+            color: #424242;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .result-detail {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 20px;
+            color: #f44336;
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .result-label {
+            color: #666;
+        }
+
+        .result-value {
+            color: #1e88e5;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .accuracy-score {
+            font-size: 64px;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+
+        .accuracy-score.excellent {
+            color: #4caf50;
+        }
+
+        .accuracy-score.good {
+            color: #2196f3;
+        }
+
+        .accuracy-score.fair {
+            color: #ff9800;
+        }
+
+        .accuracy-score.poor {
+            color: #f44336;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .header h2 {
+                font-size: 16px;
+            }
+
+            .flight-area {
+                height: 300px;
+            }
+
+            .plane {
+                font-size: 36px;
+            }
+
+            .timer-display {
+                font-size: 36px;
+                padding: 15px;
+            }
+
+            .btn {
+                padding: 12px 30px;
+                font-size: 16px;
+            }
+
+            .btn-success {
+                font-size: 20px;
+                padding: 16px 40px;
+            }
+
+            .result-modal {
+                min-width: 320px;
+                padding: 30px 20px;
+            }
+
+            .result-title {
+                font-size: 24px;
+            }
+
+            .accuracy-score {
+                font-size: 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>2026民航招飞PAT新题型</h1>
+            <h2>时间感知 - 匀速飞行</h2>
+        </div>
+
+        <div class="instruction">
+            <h3>📋 测试方法说明</h3>
+            <p><strong>游戏目标：</strong>飞机在飞行若干时间后会钻入云层，请您估算飞机到达屏幕红点处时，按下按钮。</p>
+            <p><strong>注意事项：</strong></p>
+            <ul style="margin-left: 25px; line-height: 1.8;">
+                <li>飞机飞行一段时间会消失在云层里</li>
+                <li>您要准确估算到达终点的时间</li>
+                <li>尽可能在飞机到达红点时按下"到达"按钮</li>
+                <li>系统会计算您的估测时间与实际时间的差值</li>
+            </ul>
+        </div>
+
+        <div class="game-container">
+            <div class="flight-area" id="flightArea">
+                <div class="plane" id="plane">✈️</div>
+                <div class="target" id="target"></div>
+                <div class="clouds" id="clouds"></div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="startBtn">开始测试</button>
+                <button class="btn btn-success" id="arriveBtn" disabled>🎯 到达！</button>
+                <button class="btn btn-secondary" id="resetBtn">重置统计</button>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stat-item">
+                <div class="stat-value" id="testCount">0</div>
+                <div class="stat-label">测试次数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="avgError">--</div>
+                <div class="stat-label">平均误差(秒)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="bestError">--</div>
+                <div class="stat-label">最佳成绩(秒)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="accuracy">--</div>
+                <div class="stat-label">准确率</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="result-modal" id="resultModal">
+        <div class="result-title">📊 测试结果</div>
+        <div class="accuracy-score" id="accuracyScore">95%</div>
+        <div class="result-detail">
+            <div class="result-row">
+                <span class="result-label">飞机预计到达时间：</span>
+                <span class="result-value" id="expectedTime">--</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">您的估测时间：</span>
+                <span class="result-value" id="actualTime">--</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">时间差值：</span>
+                <span class="result-value" id="timeDiff" style="color: #f44336;">--</span>
+            </div>
+        </div>
+        <div class="result-info" id="resultInfo"></div>
+        <button class="btn" onclick="closeModal()">继续测试</button>
+    </div>
+
+    <script>
+        // 游戏配置
+        const CONFIG = {
+            MIN_FLIGHT_DURATION: 6000,    // 最短飞行时间（毫秒）
+            MAX_FLIGHT_DURATION: 10000,   // 最长飞行时间（毫秒）
+            VISIBLE_RATIO: 0.45,          // 飞机可见时间占比（最多45%，确保遮挡时间至少55%）
+        };
+
+        // 游戏状态
+        const gameState = {
+            isPlaying: false,
+            startTime: 0,
+            expectedArrivalTime: 0,
+            userClickTime: 0,
+            currentFlightDuration: 0,     // 当前飞行时长
+            currentVisibleTime: 0,        // 当前可见时间
+            stats: {
+                testCount: 0,
+                totalError: 0,
+                bestError: null,
+                errors: []
+            }
+        };
+
+        // DOM元素
+        const elements = {
+            plane: document.getElementById('plane'),
+            clouds: document.getElementById('clouds'),
+            startBtn: document.getElementById('startBtn'),
+            arriveBtn: document.getElementById('arriveBtn'),
+            flightArea: document.getElementById('flightArea')
+        };
+
+        let timerInterval;
+        let animationFrame;
+
+        // 生成随机飞行时长
+        function getRandomFlightDuration() {
+            return Math.floor(Math.random() * (CONFIG.MAX_FLIGHT_DURATION - CONFIG.MIN_FLIGHT_DURATION + 1)) + CONFIG.MIN_FLIGHT_DURATION;
+        }
+
+        // 开始测试
+        function startTest() {
+            if (gameState.isPlaying) return;
+
+            // 生成随机飞行时长
+            gameState.currentFlightDuration = getRandomFlightDuration();
+            // 计算可见时间（不超过总时间的45%，确保遮挡时间至少55%）
+            gameState.currentVisibleTime = Math.floor(gameState.currentFlightDuration * CONFIG.VISIBLE_RATIO);
+
+            gameState.isPlaying = true;
+            gameState.startTime = Date.now();
+            gameState.expectedArrivalTime = gameState.startTime + gameState.currentFlightDuration;
+            gameState.userClickTime = 0;
+
+            // 重置UI
+            elements.plane.style.left = '50px';
+            elements.plane.classList.remove('hidden');
+            elements.clouds.classList.remove('show');
+            elements.startBtn.disabled = true;
+            elements.arriveBtn.disabled = false;
+
+            // 计算飞行距离
+            const flightAreaWidth = elements.flightArea.offsetWidth;
+            const targetPosition = flightAreaWidth - 80; // 减去右边距
+
+            // 启动飞行动画（使用当前随机生成的飞行时长）
+            elements.plane.style.transition = `left ${gameState.currentFlightDuration}ms linear`;
+            elements.plane.style.left = targetPosition + 'px';
+
+            // 启动计时器
+            startTimer();
+
+            // 显示云层（飞机进入云层）- 使用计算出的可见时间
+            setTimeout(() => {
+                elements.clouds.classList.add('show');
+                elements.plane.classList.add('hidden');
+            }, gameState.currentVisibleTime);
+
+            // 自动结束（如果用户未点击）
+            setTimeout(() => {
+                if (gameState.isPlaying) {
+                    endTest(true); // 超时未点击
+                }
+            }, gameState.currentFlightDuration + 2000);
+        }
+
+        // 用户点击到达按钮
+        function onArriveClick() {
+            if (!gameState.isPlaying) return;
+
+            gameState.userClickTime = Date.now();
+            endTest(false);
+        }
+
+        // 结束测试
+        function endTest(timeout) {
+            if (!gameState.isPlaying) return;
+
+            gameState.isPlaying = false;
+            stopTimer();
+            elements.startBtn.disabled = false;
+            elements.arriveBtn.disabled = true;
+
+            // 移除飞行动画
+            elements.plane.style.transition = 'none';
+
+            if (timeout && gameState.userClickTime === 0) {
+                // 超时未点击
+                alert('超时未点击！请在飞机到达时按下按钮。');
+                resetUI();
+                return;
+            }
+
+            // 计算结果（使用实际的飞行时长）
+            const expectedTime = (gameState.currentFlightDuration / 1000).toFixed(1);
+            const actualTime = ((gameState.userClickTime - gameState.startTime) / 1000).toFixed(1);
+            const timeDiff = Math.abs(parseFloat(actualTime) - parseFloat(expectedTime)).toFixed(2);
+            const accuracy = Math.max(0, 100 - (parseFloat(timeDiff) * 10)).toFixed(1);
+
+            // 更新统计
+            gameState.stats.testCount++;
+            gameState.stats.totalError += parseFloat(timeDiff);
+            gameState.stats.errors.push(parseFloat(timeDiff));
+
+            if (gameState.stats.bestError === null || parseFloat(timeDiff) < gameState.stats.bestError) {
+                gameState.stats.bestError = parseFloat(timeDiff);
+            }
+
+            updateStats();
+
+            // 显示结果
+            showResult(expectedTime, actualTime, timeDiff, accuracy);
+        }
+
+        // 显示结果模态框
+        function showResult(expectedTime, actualTime, timeDiff, accuracy) {
+            const modal = document.getElementById('resultModal');
+            const overlay = document.getElementById('modalOverlay');
+            const accuracyScore = document.getElementById('accuracyScore');
+            const resultInfo = document.getElementById('resultInfo');
+
+            document.getElementById('expectedTime').textContent = expectedTime + ' 秒';
+            document.getElementById('actualTime').textContent = actualTime + ' 秒';
+
+            const diff = parseFloat(actualTime) - parseFloat(expectedTime);
+            let diffText = Math.abs(diff).toFixed(2) + ' 秒';
+            if (diff > 0) {
+                diffText = '晚了 ' + diffText;
+            } else if (diff < 0) {
+                diffText = '早了 ' + diffText;
+            } else {
+                diffText = '完美！0.00 秒';
+            }
+            document.getElementById('timeDiff').textContent = diffText;
+
+            accuracyScore.textContent = accuracy + '%';
+
+            // 设置准确率颜色和评价
+            accuracyScore.className = 'accuracy-score';
+            let evaluation = '';
+            if (accuracy >= 90) {
+                accuracyScore.classList.add('excellent');
+                evaluation = '🎉 优秀！您的时间感知能力非常出色！';
+            } else if (accuracy >= 75) {
+                accuracyScore.classList.add('good');
+                evaluation = '👍 良好！继续保持！';
+            } else if (accuracy >= 60) {
+                accuracyScore.classList.add('fair');
+                evaluation = '💪 还不错，继续练习可以做得更好！';
+            } else {
+                accuracyScore.classList.add('poor');
+                evaluation = '⚠️ 需要多加练习，提升时间感知能力。';
+            }
+
+            resultInfo.textContent = evaluation;
+
+            modal.classList.add('show');
+            overlay.classList.add('show');
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('resultModal').classList.remove('show');
+            document.getElementById('modalOverlay').classList.remove('show');
+            resetUI();
+        }
+
+        // 重置UI
+        function resetUI() {
+            elements.plane.style.transition = 'none';
+            elements.plane.style.left = '50px';
+            elements.plane.classList.remove('hidden');
+            elements.clouds.classList.remove('show');
+        }
+
+        // 启动计时器
+        function startTimer() {
+            let startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const seconds = Math.floor(elapsed / 1000);
+                const milliseconds = Math.floor((elapsed % 1000) / 100);
+            }, 100);
+        }
+
+        // 停止计时器
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        // 更新统计
+        function updateStats() {
+            document.getElementById('testCount').textContent = gameState.stats.testCount;
+
+            const avgError = gameState.stats.totalError / gameState.stats.testCount;
+            document.getElementById('avgError').textContent = avgError.toFixed(2);
+
+            document.getElementById('bestError').textContent =
+                gameState.stats.bestError !== null ? gameState.stats.bestError.toFixed(2) : '--';
+
+            const avgAccuracy = Math.max(0, 100 - (avgError * 10)).toFixed(1);
+            document.getElementById('accuracy').textContent = avgAccuracy + '%';
+        }
+
+        // 重置统计
+        function resetStats() {
+            if (confirm('确定要重置所有统计数据吗？')) {
+                gameState.stats = {
+                    testCount: 0,
+                    totalError: 0,
+                    bestError: null,
+                    errors: []
+                };
+                updateStats();
+                document.getElementById('testCount').textContent = '0';
+                document.getElementById('avgError').textContent = '--';
+                document.getElementById('bestError').textContent = '--';
+                document.getElementById('accuracy').textContent = '--';
+            }
+        }
+
+        // 事件监听
+        elements.startBtn.addEventListener('click', startTest);
+        elements.arriveBtn.addEventListener('click', onArriveClick);
+        document.getElementById('resetBtn').addEventListener('click', resetStats);
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && gameState.isPlaying) {
+                e.preventDefault();
+                onArriveClick();
+            } else if (e.code === 'Enter' && !gameState.isPlaying) {
+                e.preventDefault();
+                startTest();
+            }
+        });
+
+        // 初始化
+        resetUI();
+    </script>
+</body>
+</html>
