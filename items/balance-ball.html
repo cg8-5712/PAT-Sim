@@ -430,6 +430,36 @@
             margin: 20px 0;
         }
 
+        .orientation-prompt {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #1e88e5;
+            color: white;
+            z-index: 2000;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 24px;
+            line-height: 1.8;
+            padding: 20px;
+        }
+
+        .orientation-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: rotatePhone 2s ease-in-out infinite;
+        }
+
+        @keyframes rotatePhone {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+        }
+
         @media (max-width: 1024px) {
             .game-area {
                 grid-template-columns: 1fr;
@@ -464,7 +494,7 @@
             }
 
             .wheel-touch-controls {
-                display: flex;
+                display: none !important; /* 强制隐藏箭头按钮 */
             }
 
             .result-modal {
@@ -472,9 +502,162 @@
                 padding: 30px 20px;
             }
         }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+            body {
+                padding: 5px;
+            }
+            .header {
+                padding: 10px;
+                margin-bottom: 5px;
+            }
+            .header h1 {
+                font-size: 18px;
+            }
+            .header h2 {
+                font-size: 12px;
+            }
+            .instruction {
+                display: none; /* 在横屏时隐藏说明以节省空间 */
+            }
+            .game-container {
+                padding: 10px;
+            }
+            .game-area {
+                grid-template-columns: 1fr 1fr; /* 强制两列布局 */
+                gap: 10px;
+            }
+            .balance-section, .lock-section {
+                padding: 10px;
+            }
+            .timer-display {
+                font-size: 28px;
+                padding: 8px;
+                margin-bottom: 8px;
+            }
+            .password-display {
+                margin-bottom: 10px;
+            }
+            .password-digit {
+                font-size: 28px;
+            }
+            .password-digits {
+                gap: 8px;
+            }
+            .lock-wheels {
+                display: grid; /* 改为grid布局 */
+                grid-template-columns: repeat(4, 1fr); /* 4列均分 */
+                justify-items: center; /* 水平居中网格项 */
+                gap: 6px;
+                margin-top: 10px;
+                width: 100%; /* 确保grid容器占满可用宽度 */
+            }
+            .wheel {
+                padding: 6px;
+                width: 100%; /* 轮盘占满网格单元宽度 */
+                max-width: 65px; /* 限制最大宽度，防止过大 */
+                /* 移除flex相关属性 */
+            }
+            .wheel-container {
+                width: 100%; /* 容器宽度自适应 */
+                height: 160px;
+                min-width: 0; /* 移除最小宽度限制，交由grid处理 */
+            }
+            .wheel-number {
+                font-size: 24px;
+                height: 45px;
+                line-height: 45px;
+            }
+            .wheel-number.active {
+                font-size: 28px;
+            }
+            .wheel-highlight {
+                height: 45px;
+            }
+            .wheel-gradient-top, .wheel-gradient-bottom {
+                height: 55px;
+            }
+            .controls {
+                margin-top: 8px;
+                gap: 10px;
+            }
+            .btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            .stats-section {
+                display: none; /* 隐藏统计信息以节省空间 */
+            }
+        }
+
+        /* 针对高分辨率手机横屏（如2780*1260）的特别优化 */
+        @media (orientation: landscape) and (min-width: 700px) and (max-height: 500px) {
+            .game-area {
+                max-width: 100%;
+                gap: 15px;
+            }
+            .balance-section, .lock-section {
+                padding: 12px;
+            }
+            .timer-display {
+                font-size: 32px;
+                padding: 10px;
+            }
+            .password-digit {
+                font-size: 32px;
+            }
+            .password-digits {
+                gap: 10px;
+            }
+            .lock-wheels {
+                display: grid; /* 改为grid布局 */
+                grid-template-columns: repeat(4, 1fr); /* 4列均分 */
+                justify-items: center; /* 水平居中网格项 */
+                gap: 8px;
+                margin-top: 10px;
+                width: 100%;
+            }
+            .wheel {
+                padding: 8px;
+                width: 100%;
+                max-width: 75px; /* 限制最大宽度 */
+                /* 移除flex相关属性 */
+            }
+            .wheel-container {
+                width: 100%;
+                height: 180px;
+                min-width: 0;
+            }
+            .wheel-number {
+                font-size: 28px;
+                height: 50px;
+                line-height: 50px;
+            }
+            .wheel-number.active {
+                font-size: 32px;
+            }
+            .wheel-highlight {
+                height: 50px;
+            }
+            .wheel-gradient-top, .wheel-gradient-bottom {
+                height: 60px;
+            }
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="orientation-prompt">
+        <div class="orientation-icon">📱</div>
+        <p>请将设备旋转至横屏模式</p>
+        <p style="font-size: 18px; margin-top: 10px; opacity: 0.9;">
+            为获得最佳游戏体验，本游戏需要横屏操作
+        </p>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1>2026民航招飞PAT新题型</h1>
@@ -711,7 +894,7 @@
             });
         }
 
-        // Pointer事件让移动端拖动更顺滑
+        // Pointer事件让移动端��动更顺滑
         function handlePointerDown(e, index) {
             if (!gameState.isPlaying) return;
             if (e.pointerType === 'mouse' && e.button !== 0) return;
