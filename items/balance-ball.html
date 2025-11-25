@@ -479,6 +479,78 @@
             }
         }
 
+        @media (orientation: landscape) and (max-height: 500px) {
+            body {
+                padding: 10px;
+            }
+            .header {
+                padding: 15px;
+                margin-bottom: 10px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .header h2 {
+                font-size: 14px;
+            }
+            .instruction {
+                display: none; /* 在横屏时隐藏说明以节省空间 */
+            }
+            .game-container {
+                padding: 15px;
+            }
+            .game-area {
+                grid-template-columns: 1fr 1fr; /* 强制两列布局 */
+                gap: 15px;
+            }
+            .balance-section, .lock-section {
+                padding: 15px;
+            }
+            .timer-display {
+                font-size: 36px;
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+            .password-digit {
+                font-size: 32px;
+            }
+            .lock-wheels {
+                gap: 8px;
+                flex-wrap: nowrap; /* 防止换行 */
+            }
+            .wheel {
+                padding: 8px;
+            }
+            .wheel-container {
+                width: 60px; /* 缩小轮盘宽度 */
+                height: 180px; /* 缩小轮盘高度 */
+            }
+            .wheel-number {
+                font-size: 28px;
+                height: 50px;
+                line-height: 50px;
+            }
+            .wheel-number.active {
+                font-size: 32px;
+            }
+            .wheel-highlight {
+                height: 50px;
+            }
+            .wheel-gradient-top, .wheel-gradient-bottom {
+                height: 65px;
+            }
+            .controls {
+                margin-top: 10px;
+            }
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            .stats-section {
+                display: none; /* 隐藏统计信息以节省空间 */
+            }
+        }
+
         @media (orientation: portrait) and (max-width: 768px) {
             .orientation-prompt {
                 display: flex;
@@ -902,6 +974,9 @@
             
             // 动画结束后，如果不在中间组，则重置位置
             setTimeout(() => {
+                const itemHeight = /Mobi|Android/i.test(navigator.userAgent) && window.innerHeight <= 500 ? 50 : 80;
+                const centerOffset = /Mobi|Android/i.test(navigator.userAgent) && window.innerHeight <= 500 ? 65 : 100;
+
                 const middleK = normalizedValue + 10; // 中间组对应的索引 (10-19)
                 if (k !== middleK) {
                     // 瞬间重置位置
@@ -921,8 +996,9 @@
         // 更新轮盘位置（带过渡动画）
         function updateWheelPosition(index, value) {
             const strip = document.getElementById(`wheelStrip${index}`);
-            const itemHeight = 80; // 每个数字的高度
-            const centerOffset = 100; // 中心偏移量
+            const isMobileLandscape = /Mobi|Android/i.test(navigator.userAgent) && window.innerHeight <= 500;
+            const itemHeight = isMobileLandscape ? 50 : 80; // 每个数字的高度
+            const centerOffset = isMobileLandscape ? 65 : 100; // 中心偏移量
             
             // 计算位置（在第二组数字上）
             const position = -(value * itemHeight + 10 * itemHeight - centerOffset);
@@ -935,8 +1011,9 @@
         // 更新轮盘位置（无过渡，用于拖动）
         function updateWheelPositionSmooth(index, value) {
             const strip = document.getElementById(`wheelStrip${index}`);
-            const itemHeight = 80; // 每个数字的高度
-            const centerOffset = 100; // 中心偏移量
+            const isMobileLandscape = /Mobi|Android/i.test(navigator.userAgent) && window.innerHeight <= 500;
+            const itemHeight = isMobileLandscape ? 50 : 80; // 每个数字的高度
+            const centerOffset = isMobileLandscape ? 65 : 100; // 中心偏移量
             
             // 计算位置（在第二组数字上）
             const position = -(value * itemHeight + 10 * itemHeight - centerOffset);
@@ -1138,8 +1215,9 @@
             if (!gameState.isPlaying) return;
 
             const strip = document.getElementById(`wheelStrip${index}`);
-            const itemHeight = 80;
-            const centerOffset = 100;
+            const isMobileLandscape = /Mobi|Android/i.test(navigator.userAgent) && window.innerHeight <= 500;
+            const itemHeight = isMobileLandscape ? 50 : 80;
+            const centerOffset = isMobileLandscape ? 65 : 100;
             
             // 获取当前位置对应的索引 k
             let currentTop = parseInt(strip.style.top) || 0;
